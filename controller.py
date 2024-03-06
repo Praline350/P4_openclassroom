@@ -1,11 +1,30 @@
-from models.models import Player
-from view import View
+from models.models import Player, DataJson, Tournament
 
-JSON_DATA_FILE_PATH = "D:\openclassroom\projets\Projet 4\programmation\data.json"
+from view import PromptForm, Menu
+import os
 
-view = View()
 
-surname, name, birth_date, national_id = view.prompt_for_player()
+data_json = DataJson()
+view = PromptForm()
+menu = Menu()
 
-player = Player(surname, name, birth_date, national_id)
-player.inscription()
+while True:
+    user_input = menu.prompt_index()
+    print(user_input)
+    match user_input:
+        case "1":
+            surname, name, birth_date, national_id = view.prompt_for_add_player()
+            player = Player(surname, name, birth_date, national_id)
+            player.add_player(surname, name)
+        case "2":
+            name_tournament, localisation, round, date = view.prompt_for_add_tournament()
+            tournament = Tournament(name_tournament, localisation, round, date)
+            tournament.add_tournament(name_tournament, date)
+        case "5":
+            break
+
+        case _:
+            print("Choix invalide")
+
+
+    
