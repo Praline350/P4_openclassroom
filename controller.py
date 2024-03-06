@@ -1,4 +1,4 @@
-from models.models import Player, DataJson, Tournament
+from models import Player, DataJson, Tournament
 
 from view import PromptForm, Menu
 import os
