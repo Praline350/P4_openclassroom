@@ -1,4 +1,5 @@
 import re
+from tkinter import Tk
 
 
 class Validator:
@@ -6,7 +7,10 @@ class Validator:
     def validate_input_str(self, prompt):
         while True:
             user_input = input(prompt)
-            if not user_input.replace(' ', '',).isalpha():
+            if not user_input.replace(
+                " ",
+                "",
+            ).isalpha():
                 print("Doit contenir seulement des lettres")
             else:
                 return user_input
