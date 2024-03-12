@@ -1,5 +1,6 @@
 import re
 from tkinter import Tk
+import os
 
 
 class Validator:
@@ -7,20 +8,23 @@ class Validator:
     def validate_input_str(self, prompt):
         while True:
             user_input = input(prompt)
-            if not user_input.replace(' ', '',).isalpha():
+            if not user_input.replace(
+                " ",
+                "",
+            ).isalpha():
                 print("Doit contenir seulement des lettres")
             else:
                 return user_input
 
     def validate_date(self, prompt):
-        pattern = r"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/(\d{4})$"
+        pattern = r"^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-(\d{4})$"
 
         while True:
             user_input = input(prompt)
             if re.match(pattern, user_input):
-                return True
+                return user_input
             else:
-                print("Format invalide = > (JJ/MM/AAAA)")
+                print("Format invalide = > (JJ-MM-AAAA)")
 
     def validate_national_id(self, prompt):
         while True:
@@ -51,16 +55,20 @@ class PromptForm:
         self.validator = Validator()
 
     def prompt_for_add_player(self):
+
+        print("------AJOUTER UN JOUEUR------")
         surname = self.validator.validate_input_str("Entrez le nom : ")
         name = self.validator.validate_input_str("Entrez le prénom : ")
         birth_date = self.validator.validate_date(
-            "Entrez la date de naissance (JJ/MM/AAAA): "
+            "Entrez la date de naissance (JJ-MM-AAAA): "
         )
         national_id = self.validator.validate_national_id("Entrez l'IDN : ")
 
         return surname, name, birth_date, national_id
 
     def prompt_for_add_tournament(self):
+
+        print("------AJOUTER UN TOURNOIS------")
         name_tournament = self.validator.validate_input_str(
             "Entrez le nom du tournoi : "
         )
@@ -68,9 +76,21 @@ class PromptForm:
             "Entrez la localisation du tournoi : "
         )
         round = 4
-        date = self.validator.validate_date("Entrez la date du tournoi (JJ/MM/AAAA) : ")
+        start_date = self.validator.validate_date(
+            "Entrez la date de début (JJ-MM-AAAA) : "
+        )
+        end_date = self.validator.validate_date("Entrez la date de fin (JJ-MM-AAAA) : ")
 
-        return name_tournament, localisation, round, date
+        return name_tournament, localisation, round, start_date, end_date
+    
+    def tournament_add_player(self):
+        print('---AJOUTER UN JOUEUR A UN TOURNOI---')
+        for tournament in os.listdir('data\data_tournaments'):
+            print(tournament)
+        name_tournament = self.validator.validate_input_str("Entrez le nom du tournoi(sans la date) : ")
+        id_player = self.validator.validate_national_id("Entrez l'ID National du joueur : ")
+
+        return name_tournament, id_player
 
 
 class Menu:
@@ -78,7 +98,22 @@ class Menu:
     def __init__(self):
         self.validator = Validator()
 
-    def prompt_index(self):
-        print("Ajouter un joueur : 1 \nAjouter un tournoi : 2 \nSORTIR : 5")
+    def menu_index(self):
+        user_input = 0
+        print("------MENU------\nMenu Joueurs : 1 \nMenu Tournois : 2 \nSORTIR : 5")
+        user_input = self.validator.validate_int("Votre choix : ")
+        return user_input
+
+    def menu_player(self):
+        user_input = 0
+        print("------MENU JOUEUR-----\nAjouter un joueur : 1 \nRetour : 4 \nSORTIR : 5")
+        user_input = self.validator.validate_int("Votre choix : ")
+        return user_input
+
+    def menu_tournament(self):
+        user_input = 0
+        print(
+            "------MENU TOURNOIS-----\nAjouter un tournois : 1 \nAjouter un joueur au tournoi : 2 \nRetour : 4 \nSORTIR : 5"
+        )
         user_input = self.validator.validate_int("Votre choix : ")
         return user_input
