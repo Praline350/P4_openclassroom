@@ -1,14 +1,14 @@
 import json
-
+from tinydb import TinyDB, Query
 import os
 from datetime import datetime, timedelta
 import time
 
-JSON_DATA_PLAYERS_PATH = "data\data_players"
-JSON_DATA_TOURNAMENTS_PATH = "data\data_tournaments"
+JSON_DATA_PLAYERS_PATH = "data/data_players.json"
+JSON_DATA_TOURNAMENTS_PATH = "data/data_tournaments.json"
 
 
-class DataJson:
+"""class DataJson:
     def __init__(self):
         if not os.path.exists("data"):
             os.makedirs("data")
@@ -26,12 +26,17 @@ class DataJson:
     def write_data(self, data, file_path):
         with open(file_path, "w") as json_file:
             json.dump(data, json_file, indent=4)
+"""
 
 
 class Player:
 
     def __init__(self):
-        self.data_json = DataJson()
+        self.db_player = TinyDB(JSON_DATA_PLAYERS_PATH)
+        self.players = self.db_player.table("Players")
+        if not os.path.exists(JSON_DATA_PLAYERS_PATH):
+            with open(JSON_DATA_PLAYERS_PATH, "w") as f:
+                json.dump([], f)
 
     def write_player(self, surname, name, birth_date, national_id):
         self.data = {
@@ -40,26 +45,26 @@ class Player:
             "birth_date": birth_date,
             "national_id": national_id,
         }
-        file_path = f"{JSON_DATA_PLAYERS_PATH}\{surname}_{name}.json"
-        self.data_json.write_data(self.data, file_path)
+        self.players.insert(self.data)
 
-    def find_player(self, id_player):
-        self.id_player = id_player
-        for player in os.listdir(JSON_DATA_PLAYERS_PATH):
-            player_data = self.data_json.read_data(
-                os.path.join(JSON_DATA_PLAYERS_PATH, player)
-            )
-            if player_data and "national_id" in player_data:
-                if player_data["national_id"] == id_player:
-                    return player_data
-        return None
+    def find_player(self, national_id):
+        PlayerQuery = Query()
+        player_data = self.players.search(PlayerQuery.national_id == national_id)
+        if player_data:
+            return player_data[0]
+        else:
+            return None
 
 
 class Tournament:
 
     def __init__(self):
         self.player = Player()
-        self.data_json = DataJson()
+        self.db_tournament = TinyDB(JSON_DATA_TOURNAMENTS_PATH)
+        self.tournaments = self.db_tournament.table("Tournois")
+        if not os.path.exists(JSON_DATA_TOURNAMENTS_PATH):
+            with open(JSON_DATA_TOURNAMENTS_PATH, "w") as f:
+                json.dump([], f)
 
     def write_tournament(
         self, name_tournament, localisation, round, start_date, end_date
@@ -72,14 +77,13 @@ class Tournament:
             "Fin du tournoi": end_date,
             "Liste des joueurs": [],
         }
-        os.makedirs(f"{JSON_DATA_TOURNAMENTS_PATH}\{name_tournament}")
-        time.sleep(0.2)
-        file_path = f"{JSON_DATA_TOURNAMENTS_PATH}\{name_tournament}\{name_tournament}.json"
-        self.data_json.write_data(self.data, file_path)
+        self.tournaments.insert(self.data)
 
     def add_player(self, name_tournament, id_player):
         self.name_tournament = name_tournament
-        file_path = f"{JSON_DATA_TOURNAMENTS_PATH}\{name_tournament}\{name_tournament}.json"
+        file_path = (
+            f"{JSON_DATA_TOURNAMENTS_PATH}\{name_tournament}\{name_tournament}.json"
+        )
         self.id_player = id_player
         player_data = self.player.find_player(self.id_player)
         if player_data:
@@ -90,9 +94,6 @@ class Tournament:
         if tournament_data:
             tournament_data["Liste des joueurs"].append(player)
             self.data_json.write_data(tournament_data, file_path)
-
-
-        
 
 
 class Round:
