@@ -2,6 +2,8 @@ import re
 from tkinter import Tk
 import os
 
+JSON_DATA_PLAYERS_PATH = "data\data_players"
+JSON_DATA_TOURNAMENTS_PATH = "data\data_tournaments"
 
 class Validator:
 
@@ -85,9 +87,9 @@ class PromptForm:
     
     def tournament_add_player(self):
         print('---AJOUTER UN JOUEUR A UN TOURNOI---')
-        for tournament in os.listdir('data\data_tournaments'):
+        for tournament in os.listdir(JSON_DATA_TOURNAMENTS_PATH):
             print(tournament)
-        name_tournament = self.validator.validate_input_str("Entrez le nom du tournoi(sans la date) : ")
+        name_tournament = self.validator.validate_input_str("Entrez le nom du tournoi: ")
         id_player = self.validator.validate_national_id("Entrez l'ID National du joueur : ")
 
         return name_tournament, id_player
