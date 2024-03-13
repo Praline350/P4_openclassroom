@@ -58,29 +58,41 @@ class Player:
 class Tournament:
 
     def __init__(self):
+        self.player = Player()
         self.data_json = DataJson()
 
     def write_tournament(
         self, name_tournament, localisation, round, start_date, end_date
     ):
         self.data = {
-            "Nom du tournoi": str(name_tournament).replace(" ", "_"),
+            "Nom du tournoi": str(name_tournament),
             "localisation": localisation,
             "Nombre de tours": round,
             "Debut du tournoi": start_date,
             "Fin du tournoi": end_date,
             "Liste des joueurs": [],
         }
-        os.makedirs(f"{JSON_DATA_TOURNAMENTS_PATH}\{name_tournament}_{start_date}")
+        os.makedirs(f"{JSON_DATA_TOURNAMENTS_PATH}\{name_tournament}")
         time.sleep(0.2)
-        file_path = f"{JSON_DATA_TOURNAMENTS_PATH}\{name_tournament}_{start_date}\{name_tournament}_{start_date}.json"
+        file_path = f"{JSON_DATA_TOURNAMENTS_PATH}\{name_tournament}\{name_tournament}.json"
         self.data_json.write_data(self.data, file_path)
 
-    def add_player(self, name_player, id_player, tournament):
-        self.name_player = name_player
+    def add_player(self, name_tournament, id_player):
+        self.name_tournament = name_tournament
+        file_path = f"{JSON_DATA_TOURNAMENTS_PATH}\{name_tournament}\{name_tournament}.json"
         self.id_player = id_player
-        self.tournament = tournament
-        self.data_json.read_data(f"{JSON_DATA_PLAYERS_PATH}\{name_player}.json")
+        player_data = self.player.find_player(self.id_player)
+        if player_data:
+            self.name = player_data["name"]
+            self.surname = player_data["surname"]
+            player = (self.name, self.surname)
+        tournament_data = self.data_json.read_data(file_path)
+        if tournament_data:
+            tournament_data["Liste des joueurs"].append(player)
+            self.data_json.write_data(tournament_data, file_path)
+
+
+        
 
 
 class Round:
