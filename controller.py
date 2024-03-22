@@ -48,7 +48,6 @@ class Controller:
                     print("Choix invalide")
 
     def menu_tournament_choice(self):
-        db = TinyDB(JSON_DATA_TOURNAMENTS_PATH)
         while True:
             user_input = self.menu.menu_tournament()
             match user_input:
