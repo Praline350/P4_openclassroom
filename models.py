@@ -138,13 +138,14 @@ class Round:
     def add_round(self, name_tournament):
         self.rounds = self.db_rounds.table(name_tournament)
 
+        # Initialisation des dates automatiques
         start_date = datetime.now()
         end_date = start_date + timedelta(hours=4)
         tournament_table = self.tournament.db_tournament.table(name_tournament)
         tournament_data = self.tournament.find_tournament(name_tournament)
         if tournament_data:
             tournament_round = tournament_data.get("rounds", [])
-            round_index = len(tournament_round) + 1
+            round_index = len(self.rounds.all()) + 1
             self.data = {
                 "round_index": round_index,
                 "start_date": start_date.strftime("%H:%M"),
@@ -161,6 +162,7 @@ class Round:
             print("tournoi inexistant")
 
     def find_round(self, round_index, name_tournament):
+        # Trouve un round grace a son index de round et le nom du tournoi auquel il appartient
         round_table = self.db_rounds.table(name_tournament)
         rounds = round_table.all()
         for round_data in rounds:
@@ -169,6 +171,7 @@ class Round:
         return None
 
     def mix_players_random(self, name_tournament):
+        # Melange les joeurs présent dans le tournoi
         tournament_data = self.tournament.find_tournament(name_tournament)
         if tournament_data:
             tournament_round = tournament_data.get("player_list", [])
@@ -191,34 +194,38 @@ class Game:
         self.PlayerQuery = Query()
 
     def make_game(self, name_tournament, round_index):
+        # Créer les matchs en fonctions des joueurs présent dans le tournoi pour le round en cours
         self.round_index = round_index
-        tournament_table = self.tournament.db_tournament.table(name_tournament)
         round_table = self.round.db_rounds.table(name_tournament)
         round_data = self.round.find_round(round_index, name_tournament)
         tournament_data = self.tournament.find_tournament(name_tournament)
         if tournament_data:
+            # Recupère les joueurs présent dans le tournoi
             player_list = tournament_data.get("player_list", [])
             num_players = len(player_list)
+            # Vérifie que les joueurs sont bien un nombre pair
             if num_players % 2 != 0:
                 print("nombre impaire")
                 return
             game_id = 1
+            # Créer les pairs de joueurs
             for i in range(0, num_players, 2):
                 player_pair = (player_list[i], player_list[i + 1])
                 game_list = round_data.get("game_list", [])
+                # Verifie que le joueur n'est pas déjà dans un match
                 pair_already_in_game = False
-                for match in game_list:
+                for game in game_list:
                     if (
-                        player_pair[0] in match["players"]
-                        or player_pair[1] in match["players"]
+                        player_pair[0] in game["players"]
+                        or player_pair[1] in game["players"]
                     ):
                         pair_already_in_game = True
                         break
+                # Si les joueurs ne sont pas encore dans un match, créer un match par pair
                 if not pair_already_in_game:
                     game_data = {"game_id": game_id, "players": player_pair}
                     game_list.append(game_data)
                     round_table.update({"game_list": game_list}, doc_ids=[round_index])
-
                     game_id += 1
                 else:
                     print("Un joueur est déjà présent dans la game_list")
@@ -230,21 +237,63 @@ class Game:
             game_list = round_data.get("game_list", [])
             if game_list:
                 for game in game_list:
+                    # Initialise un pourcentage de victoire et de match nul
                     win_pourcentage = 0.3
                     result = random.random()
                     if result > win_pourcentage:
                         winner = random.choice(game["players"])
                         winner_index = game["players"].index(winner)
-                        game["players"][winner_index]["score"] += 1
+                        game["players"][winner_index]["score"] = 1
                         print(f"{winner} à gagner")
                     else:
                         for player in game["players"]:
-                            player["score"] += 0.5
+                            player["score"] = 0.5
                         print("match nul")
                 round_table.update({"game_list": game_list})
+    
+    def end_game(self, name_tournament, round_index):
+        tournament_table = self.tournament.db_tournament.table(name_tournament)
+        round_data = self.round.find_round(round_index, name_tournament)
+        tournament_data = self.tournament.find_tournament(name_tournament)
+        game_list = round_data.get('game_list', [])
+        player_list = tournament_data.get('player_list', [])
+        for game in game_list:
+            for player in game['players']:
+                national_id = player['national_id']
+                score_change = player['score']
+                for p in player_list:
+                    if p['national_id'] == national_id:
+                        p['score'] += score_change
+        tournament_table.update({"player_list": player_list})
+
+    def generate_pair_score(self, name_tournament, ):
+        tournament_table = self.tournament.db_tournament.table(name_tournament)
+        tournament_data = self.tournament.find_tournament(name_tournament)
+        if tournament_data:
+            player_list = tournament_data.get('player_list', [])
+            sorted_players = sorted(player_list, key=lambda x: x['score'], reverse=True)
+            tournament_table.update({"player_list": sorted_players})
+
+       
+        
+            
+
+                
+
+
 
 
 round_index = 1
 name_tournament = "tournoi eliminatoire"
 game = Game()
+round = Round()
+game.make_game(name_tournament, round_index)
 game.play_game(name_tournament, round_index)
+game.end_game(name_tournament, round_index)
+game.generate_pair_score(name_tournament)
+round.add_round(name_tournament)
+round_index += 1
+game.make_game(name_tournament, round_index)
+game.play_game(name_tournament, round_index)
+game.end_game(name_tournament, round_index)
+
