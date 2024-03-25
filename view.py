@@ -93,26 +93,49 @@ class PromptForm:
 
     def tournament_add_player(self, tournament_list):
         print("---AJOUTER UN JOUEUR A UN TOURNOI---")
-
-        name_tournament = questionary.select("Quel Tournoi ?",
-                                             choices=tournament_list).ask()
+        
+        name_tournament = questionary.select(
+            "Quel Tournoi ?", choices=tournament_list
+        ).ask()
         id_player = self.validator.validate_national_id(
             "Entrez l'ID National du joueur : "
         )
 
         return name_tournament, id_player
-    
+
     def tournament_add_round(self, tournament_list):
         print("-----AJOUTER UN ROUND AU TOURNOI-----")
-        name_tournament = questionary.select("Quel tournoi ?",
-                                             choices=tournament_list).ask()
+        name_tournament = questionary.select(
+            "Quel tournoi ?", choices=tournament_list
+        ).ask()
         return name_tournament
 
     def prompt_for_remove_tournament(self, tournament_list):
         print("-----SUPPRIMER UN TOURNOI-----")
-        name_tournament = questionary.select("Quel tournoi supprimé ?",
-                                             choices=tournament_list).ask()
+        name_tournament = questionary.select(
+            "Quel tournoi supprimé ?", choices=tournament_list
+        ).ask()
         return name_tournament
+    
+    def prompt_continue_tournament(self):
+        print("---Tournoi en cours---")
+        user_input = questionary.select("Passer au prochain Round ?", 
+                                        choices=["YES", "NO"]).ask()
+        return user_input
+    
+    def prompt_for_remove_player(self, tournament_list):
+        print("-----Supprimer un joueur du tournoi-----")
+        tournament_list.append("sortie")
+        name_tournament = questionary.select("De quel tournoi ?",
+                                             choices=tournament_list).ask()
+        id_player = self.validator.validate_national_id("Entrez l'ID du joueur à supprimé : ")
+        return name_tournament, id_player
+    
+    def prompt_continue_add(self):
+        user_input = questionary.select("Ajouter un autre ?",
+                                        choices=["YES", "NO"]).ask()
+        return user_input
+        
 
 
 class Menu:
@@ -123,24 +146,16 @@ class Menu:
     def menu_index(self):
         user_input = 0
         user_input = questionary.select(
-            "------MENU------",
-            choices=[
-                "Menu joueur",
-                "Menu tournois",
-                "Sortir"
-            ]).ask()
+            "------MENU------", choices=["Menu joueur", "Menu tournois", "Commencer un tournoi", "Sortir"]
+        ).ask()
         print(user_input)
         return user_input
 
     def menu_player(self):
         user_input = 0
         user_input = questionary.select(
-            "------MENU JOUEUR-----",
-            choices=[
-                "Ajouter un joueur",
-                "Retour",
-                "Sortir"
-            ]).ask()
+            "------MENU JOUEUR-----", choices=["Ajouter un joueur", "Retour", "Sortir"]
+        ).ask()
         print(user_input)
         return user_input
 
@@ -151,9 +166,21 @@ class Menu:
             choices=[
                 "Ajouter un tournois",
                 "Ajouter un joueur au tournoi",
+                "Supprimer un joueur du tournoi",
                 "Ajouter un round au tournoi",
                 "Supprimer un tournoi",
                 "Retour",
-                "Sortir"
-            ]).ask()
+                "Sortir",
+            ],
+        ).ask()
         return user_input
+    
+    def menu_begin_tournament(self, tournament_list):
+        name_tournament = questionary.select(
+            "-----Quel tournoi ? -----",
+            choices=tournament_list
+        ).ask()
+        
+        return name_tournament
+
+    

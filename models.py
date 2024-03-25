@@ -16,7 +16,7 @@ class Player:
 
     def __init__(self):
         # Initialisation de la base de données des joueurs
-        self.db_player = TinyDB(JSON_DATA_PLAYERS_PATH)
+        self.db_player = TinyDB(JSON_DATA_PLAYERS_PATH, indent=4)
         self.players = self.db_player.table("Players")
         if not os.path.exists(JSON_DATA_PLAYERS_PATH):
             with open(JSON_DATA_PLAYERS_PATH, "w") as f:
@@ -48,7 +48,7 @@ class Tournament:
     def __init__(self):
         self.player = Player()
         # Initialisation de la base de données des tournois
-        self.db_tournament = TinyDB(JSON_DATA_TOURNAMENTS_PATH)
+        self.db_tournament = TinyDB(JSON_DATA_TOURNAMENTS_PATH, indent=4)
         if not os.path.exists(JSON_DATA_TOURNAMENTS_PATH):
             with open(JSON_DATA_TOURNAMENTS_PATH, "w") as f:
                 json.dump([], f)
@@ -66,7 +66,7 @@ class Tournament:
             "localisation": localisation,
             "rounds_number": round,
             "rounds": [],
-            "actual_round": 1,
+            "actual_round": 0,
             "start_date": start_date,
             "end_date": end_date,
             "player_list": [],
@@ -98,7 +98,7 @@ class Tournament:
                     player.get("national_id") == id_player for player in player_list
                 )
                 if not player_in_tournament:
-                    player_list.append({"national_id": national_id, "score": 0})
+                    player_list.append({"national_id": national_id, "name": player_name, "score": 0})
                     tournament_table.update(
                         {"player_list": player_list},
                         self.TournamentQuery.name_tournament == name_tournament,
@@ -108,6 +108,22 @@ class Tournament:
                     print("Joueur déjà dans le tournoi")
         else:
             print("tournoi inexistant")
+
+    def remove_player(self, name_tournament, id_player):
+        tournament_table = self.db_tournament.table(name_tournament)
+        tournament_data = self.find_tournament(name_tournament)
+        if tournament_data:
+            tournament_table.remove(
+                (self.TournamentQuery.name_tournament == name_tournament)
+                & (
+                    self.TournamentQuery.player_list.any(
+                        self.PlayerQuery.national_id == id_player
+                    )
+                )
+            )
+            print(f"Le joueur {id_player} a été retiré du tournoi {name_tournament}.")
+        else:
+            print("Impossible de retirer le joueur du tournoi.")
 
     def find_tournament(self, name_tournament):
         # Recherche d'un tournoi par son nom
@@ -127,7 +143,7 @@ class Round:
 
     def __init__(self):
         self.tournament = Tournament()
-        self.db_rounds = TinyDB(JSON_DATA_ROUNDS_PATH)
+        self.db_rounds = TinyDB(JSON_DATA_ROUNDS_PATH, indent=4)
 
         if not os.path.exists(JSON_DATA_ROUNDS_PATH):
             with open(JSON_DATA_ROUNDS_PATH, "w") as f:
@@ -146,6 +162,7 @@ class Round:
         if tournament_data:
             tournament_round = tournament_data.get("rounds", [])
             round_index = len(self.rounds.all()) + 1
+            actual_round = +1
             self.data = {
                 "round_index": round_index,
                 "start_date": start_date.strftime("%H:%M"),
@@ -155,9 +172,10 @@ class Round:
             self.rounds.insert(self.data)
             tournament_round.append(self.data)
             tournament_table.update(
-                {"rounds": tournament_round},
+                {"rounds": tournament_round, "actual_round": actual_round},
                 self.TournamentQuery.name_tournament == name_tournament,
             )
+            return round_index
         else:
             print("tournoi inexistant")
 
@@ -237,6 +255,7 @@ class Game:
             game_list = round_data.get("game_list", [])
             if game_list:
                 for game in game_list:
+                    time.sleep(1)
                     # Initialise un pourcentage de victoire et de match nul
                     win_pourcentage = 0.3
                     result = random.random()
@@ -244,46 +263,38 @@ class Game:
                         winner = random.choice(game["players"])
                         winner_index = game["players"].index(winner)
                         game["players"][winner_index]["score"] = 1
-                        print(f"{winner} à gagner")
+                        print(f"{winner['name']} à gagner contre {game['players'][1 - winner_index]['name']}")
                     else:
                         for player in game["players"]:
                             player["score"] = 0.5
-                        print("match nul")
+                        print(f"Match nul entre {game['players'][0]['name']} et {game['players'][1]['name']}")
                 round_table.update({"game_list": game_list})
-    
+
     def end_game(self, name_tournament, round_index):
         tournament_table = self.tournament.db_tournament.table(name_tournament)
         round_data = self.round.find_round(round_index, name_tournament)
         tournament_data = self.tournament.find_tournament(name_tournament)
-        game_list = round_data.get('game_list', [])
-        player_list = tournament_data.get('player_list', [])
+        game_list = round_data.get("game_list", [])
+        player_list = tournament_data.get("player_list", [])
         for game in game_list:
-            for player in game['players']:
-                national_id = player['national_id']
-                score_change = player['score']
+            for player in game["players"]:
+                national_id = player["national_id"]
+                score_change = player["score"]
                 for p in player_list:
-                    if p['national_id'] == national_id:
-                        p['score'] += score_change
+                    if p["national_id"] == national_id:
+                        p["score"] += score_change
         tournament_table.update({"player_list": player_list})
 
-    def generate_pair_score(self, name_tournament, ):
+    def generate_pair_score(self, name_tournament):
         tournament_table = self.tournament.db_tournament.table(name_tournament)
         tournament_data = self.tournament.find_tournament(name_tournament)
         if tournament_data:
-            player_list = tournament_data.get('player_list', [])
-            sorted_players = sorted(player_list, key=lambda x: x['score'], reverse=True)
+            player_list = tournament_data.get("player_list", [])
+            sorted_players = sorted(player_list, key=lambda x: x["score"], reverse=True)
             tournament_table.update({"player_list": sorted_players})
 
-       
-        
-            
 
-                
-
-
-
-
-round_index = 1
+"""round_index = 1
 name_tournament = "tournoi eliminatoire"
 game = Game()
 round = Round()
@@ -297,3 +308,4 @@ game.make_game(name_tournament, round_index)
 game.play_game(name_tournament, round_index)
 game.end_game(name_tournament, round_index)
 
+"""
