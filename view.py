@@ -93,7 +93,7 @@ class PromptForm:
 
     def tournament_add_player(self, tournament_list):
         print("---AJOUTER UN JOUEUR A UN TOURNOI---")
-        
+
         name_tournament = questionary.select(
             "Quel Tournoi ?", choices=tournament_list
         ).ask()
@@ -116,27 +116,47 @@ class PromptForm:
             "Quel tournoi supprimé ?", choices=tournament_list
         ).ask()
         return name_tournament
-    
+
     def prompt_continue_tournament(self):
         print("---Tournoi en cours---")
-        user_input = questionary.select("Passer au prochain Round ?", 
-                                        choices=["YES", "NO"]).ask()
+        user_input = questionary.select(
+            "Passer au prochain Round ?", choices=["YES", "NO"]
+        ).ask()
         return user_input
-    
+
     def prompt_for_remove_player(self, tournament_list):
         print("-----Supprimer un joueur du tournoi-----")
-        tournament_list.append("sortie")
-        name_tournament = questionary.select("De quel tournoi ?",
-                                             choices=tournament_list).ask()
-        id_player = self.validator.validate_national_id("Entrez l'ID du joueur à supprimé : ")
+
+        name_tournament = questionary.select(
+            "De quel tournoi ?", choices=tournament_list
+        ).ask()
+        id_player = self.validator.validate_national_id(
+            "Entrez l'ID du joueur à supprimé : "
+        )
         return name_tournament, id_player
-    
+
     def prompt_continue_add(self):
-        user_input = questionary.select("Ajouter un autre ?",
-                                        choices=["YES", "NO"]).ask()
+        user_input = questionary.select(
+            "Ajouter un autre ?", choices=["YES", "NO"]
+        ).ask()
         return user_input
+
+    def prompt_export(self):
+        user_input = questionary.select(
+            "Voulez-vous exporter les fichier ?", choices=["YES", "NO"]
+        ).ask()
+        return user_input
+    
+    def prompt_data_tournament(self, tournament_list):
+        name_tournament = questionary.select(
+            "Info de quel tournoi ?",
+            choices=tournament_list
+        ).ask()
+        return name_tournament
+    
         
 
+    
 
 class Menu:
 
@@ -146,7 +166,14 @@ class Menu:
     def menu_index(self):
         user_input = 0
         user_input = questionary.select(
-            "------MENU------", choices=["Menu joueur", "Menu tournois", "Commencer un tournoi", "Sortir"]
+            "------MENU------",
+            choices=[
+                "Menu joueur",
+                "Menu tournois",
+                "Commencer un tournoi",
+                "Rapports",
+                "Sortir",
+            ],
         ).ask()
         print(user_input)
         return user_input
@@ -174,13 +201,25 @@ class Menu:
             ],
         ).ask()
         return user_input
-    
+
     def menu_begin_tournament(self, tournament_list):
         name_tournament = questionary.select(
-            "-----Quel tournoi ? -----",
-            choices=tournament_list
+            "-----Quel tournoi ? -----", choices=tournament_list
         ).ask()
-        
+
         return name_tournament
 
-    
+    def menu_report(self):
+        user_input = questionary.select(
+            "----Quel rapport voulez vous ? ----",
+            choices=[
+                "Liste de tous les joueurs",
+                "Liste de tous les tournois",
+                "Liste des joueur dans le tournoi",
+                "Liste des tour et matchs d'un tournoi",
+                "Retour",
+                "Sortir",
+            ],
+        ).ask()
+
+        return user_input

@@ -1,4 +1,4 @@
-from models import Player, Tournament, Round, Game
+from models import Player, Tournament, Round, Game, Report
 
 from view import PromptForm, Menu
 import os
@@ -18,6 +18,7 @@ class Controller:
         self.tournament = Tournament()
         self.round = Round()
         self.game = Game()
+        self.report = Report()
 
     def menu_choice(self):
         while True:
@@ -29,6 +30,46 @@ class Controller:
                     self.menu_tournament_choice()
                 case "Commencer un tournoi":
                     self.begin_tournament()
+                case "Rapports":
+                    self.menu_report_list()
+                case "Sortir":
+                    sys.exit()
+                case _:
+                    print("Choix invalide")
+
+    def menu_report_list(self):
+        while True:
+            user_input = self.menu.menu_report()
+            match user_input:
+                case "Liste de tous les joueurs":
+                    player_data = self.report.player_report()
+                    file_path = "export_data\export_players.txt"
+                    self.report.export_players_to_file(player_data, file_path)
+                    
+                case "Liste de tous les tournois":
+                    tournament_list = self.tournament.get_name_tournaments()
+                    name_tournament = self.form.prompt_data_tournament(tournament_list)
+                    tournament_data = self.report.tournament_report(name_tournament)
+                    file_path = "export_data\export_tournament.txt"
+                    self.report.export_tournament_to_file(tournament_data, file_path)
+                    
+                   
+                case "Liste des joueur dans le tournoi":
+                    tournament_list = self.tournament.get_name_tournaments()
+                    name_tournament = self.form.prompt_data_tournament(tournament_list)
+                    player_list = self.report.player_in_tournament_report(name_tournament)
+                    file_path = "export_data\export_player_in_tournament.txt"
+                    self.report.export_player_in_tournament(player_list, file_path, name_tournament)
+                    
+                case "Liste des tour et matchs d'un tournoi":
+                    tournament_list = self.tournament.get_name_tournaments()
+                    name_tournament = self.form.prompt_data_tournament(tournament_list)
+                    round_data = self.report.round_report(name_tournament)
+                    file_path = "export_data\export_rounds.txt"
+                    self.report.export_round_to_file(round_data, file_path)
+                    
+                case "Retour":
+                    break
                 case "Sortir":
                     sys.exit()
                 case _:
@@ -79,9 +120,10 @@ class Controller:
                 case "Supprimer un joueur du tournoi":
                     tournament_list = self.tournament.get_name_tournaments()
                     name_tournament, id_player = self.form.prompt_for_remove_player(
-                        name_tournament, id_player
+                        tournament_list
                     )
-                    print(f'{id_player} enlevé du tournoi "{name_tournament}"')
+                    self.tournament.remove_player(name_tournament, id_player)
+                    
                 case "Ajouter un round au tournoi":
                     tournament_list = self.tournament.get_name_tournaments()
                     name_tournament = self.form.tournament_add_round(tournament_list)
@@ -91,8 +133,9 @@ class Controller:
                     name_tournament = self.form.prompt_for_remove_tournament(
                         tournament_list
                     )
+                    print(name_tournament)
                     self.tournament.remove_tournament(name_tournament)
-                    print(f"{name_tournament} Supprimé")
+                    
 
                 case "Retour":
                     break
