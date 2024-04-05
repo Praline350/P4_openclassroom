@@ -91,17 +91,21 @@ class PromptForm:
 
         return name_tournament, localisation, round, start_date, end_date
 
-    def tournament_add_player(self, tournament_list):
+    def tournament_add_player(self):
         print("---AJOUTER UN JOUEUR A UN TOURNOI---")
 
-        name_tournament = questionary.select(
-            "Quel Tournoi ?", choices=tournament_list
-        ).ask()
         id_player = self.validator.validate_national_id(
             "Entrez l'ID National du joueur : "
         )
 
-        return name_tournament, id_player
+        return id_player
+    
+    def prompt_for_id_list(self, players_ids):
+        id_player = questionary.select("Liste des joueurs",
+                                       choices=players_ids).ask()
+        return id_player
+    
+    
 
     def tournament_add_round(self, tournament_list):
         print("-----AJOUTER UN ROUND AU TOURNOI-----")
@@ -149,7 +153,7 @@ class PromptForm:
     
     def prompt_data_tournament(self, tournament_list):
         name_tournament = questionary.select(
-            "Info de quel tournoi ?",
+            "quel tournoi ?",
             choices=tournament_list
         ).ask()
         return name_tournament
@@ -194,7 +198,6 @@ class Menu:
                 "Ajouter un tournois",
                 "Ajouter un joueur au tournoi",
                 "Supprimer un joueur du tournoi",
-                "Ajouter un round au tournoi",
                 "Supprimer un tournoi",
                 "Retour",
                 "Sortir",

@@ -1,7 +1,7 @@
 import json
 from tinydb import TinyDB, Query
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 import random
 
