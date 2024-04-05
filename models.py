@@ -24,7 +24,7 @@ class Player:
 
     def __init__(self):
         # Initialisation de la base de données des joueurs
-        self.db_player = TinyDB(JSON_DATA_PLAYERS_PATH, indent=4)
+        self.db_player = TinyDB(JSON_DATA_PLAYERS_PATH, indent=4, encoding="utf-8")
         self.players = self.db_player.table("Players")
         if not os.path.exists(JSON_DATA_PLAYERS_PATH):
             with open(JSON_DATA_PLAYERS_PATH, "w") as f:
@@ -83,7 +83,7 @@ class Tournament:
 
     def initialize_db(self, name_tournament):
         file_path = f"data/data_tournament/{name_tournament}.json"
-        self.db_tournament = TinyDB(file_path, indent=4)
+        self.db_tournament = TinyDB(file_path, indent=4, encoding="utf-8")
         self.tournament = self.db_tournament.table(name_tournament)
 
     def write_tournament(
@@ -97,6 +97,7 @@ class Tournament:
             "start_date": start_date,
             "end_date": end_date,
             "actual_round": 0,
+            "winner": "",
             "player_list": [],
             "description": "",
         }
@@ -190,6 +191,22 @@ class Tournament:
             names_tournament.append(name_tournament)
         return names_tournament
 
+    def end_tournament(self, name_tournament):
+        self.initialize_db(name_tournament)
+        tournament_data = self.find_tournament(name_tournament)
+        if tournament_data:
+            player_list = tournament_data.get("player_list", [])
+            tournament_winner = player_list[0]["name"]
+            self.tournament.update(
+                {"actual_round": "tournament closed"},
+                Query().name_tournament == name_tournament,
+            )
+            self.tournament.update(
+                {"winner": tournament_winner},
+                Query().name_tournament == name_tournament,
+            )
+            return tournament_winner
+
 
 class Round:
 
@@ -200,17 +217,23 @@ class Round:
     def add_round(self, name_tournament):
         self.tournament.initialize_db(name_tournament)
         round_table = self.tournament.db_tournament.table("rounds")
-        start_date = datetime.now()
-        end_date = start_date + timedelta(hours=4)
+        start_date = datetime.now().strftime("%d-%m-%Y")
+        start_hour = datetime.now()
         len_round = len(round_table)
         round_index = len_round + 1
+        actual_round = round_index
         round_data = {
             "round_index": round_index,
-            "start_date": start_date.strftime("%H:%M"),
-            "end_date": end_date.strftime("%H:%M"),
+            "start_date": start_date,
+            "start_hour": start_hour.strftime("%H:%M"),
+            "end_date": "",
+            "end_hour": "",
             "game_list": [],
         }
         round_table.insert(round_data)
+        self.tournament.tournament.update(
+            {"actual_round": actual_round}, Query().name_tournament == name_tournament
+        )
 
         return round_index
 
@@ -321,6 +344,8 @@ class Game:
         round_data = self.round.find_round(name_tournament, round_index)
         player_list = tournament_data.get("player_list", [])
         game_list = round_data.get("game_list", [])
+        end_date = datetime.now().strftime("%d-%m-%Y")
+        end_hour = datetime.now().strftime("%H:%M")
         for game in game_list:
             for player in game["players"]:
                 national_id = player["national_id"]
@@ -329,6 +354,11 @@ class Game:
                     if p["national_id"] == national_id:
                         p["score"] += score_change
         self.tournament.tournament.update({"player_list": player_list})
+        round_data["end_date"] = end_date  # type: ignore
+        round_data["end_hour"] = end_hour  # type: ignore
+        self.tournament.db_tournament.table("rounds").update(
+            round_data, doc_ids=[round_index]  # type: ignore
+        )
 
     def sorted_score(self, name_tournament):
         self.tournament.initialize_db(name_tournament)
@@ -337,9 +367,6 @@ class Game:
             player_list = tournament_data.get("player_list", [])
             sorted_players = sorted(player_list, key=lambda x: x["score"], reverse=True)
             self.tournament.tournament.update({"player_list": sorted_players})
-            tournament_winner = sorted_players[0]["name"]
-            # Retourne le gagnant du tournoi en appelant la mehode à la fin du tournoi
-            return tournament_winner
 
 
 class Report:
@@ -352,6 +379,19 @@ class Report:
         self.RoundQuery = Query()
         self.PlayerQuery = Query()
         self.TournamentQuery = Query()
+
+    def format_report(self, data):
+        if isinstance(data, list):
+            for i in range(len(data)):
+                data[i] = (
+                    str(data[i]).replace("{", "").replace("}", "").replace("'", "")
+                )
+            return data
+        elif isinstance(data, dict):
+            formatted_data = ""
+            for key, value in data.items():
+                formatted_data += f"{key}: {value}\n"
+            return formatted_data
 
     def player_report(self):
         player_data = self.player.players.all()
