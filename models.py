@@ -11,6 +11,14 @@ JSON_DATA_PLAYERS_PATH = "data/data_players.json"
 FOLDER_DATA_TOURNAMENTS_PATH = "data/data_tournament"
 JSON_DATA_ROUNDS_PATH = "data/data_rounds.json"
 
+# Chemins vers les fichiers export
+
+FOLDER_EXPORT_DATA = "export_data"
+EXPORT_PLAYERS_PATH = "export_data\export_players.txt"
+EXPORT_PLAYERS_IN_TOURNAMENT_PATH = "export_data\export_player_in_tournament.txt"
+EXPORT_ROUNDS_PATH = "export_data\export_rounds.txt"
+EXPORT_TOURNAMENT_PATH = "export_data\export_tournament.txt"
+
 
 class Player:
 
@@ -57,6 +65,12 @@ class Player:
             player_name.append(name["name"])
         return player_name
 
+    def remove_player(self, national_id):
+        self.players.remove(Query().national_id == national_id)
+        player_data = self.players.search(Query().national_id == national_id)
+        if not player_data:
+            return True  # retourne true si le joueur est suppr
+
 
 class Tournament:
 
@@ -93,10 +107,12 @@ class Tournament:
         if os.path.exists(file_path):
             os.remove(file_path)
             print("Tournoi supprimé avec succès.")
+            return True
         else:
             print("Tournoi inexistant.")
+            return False
 
-    def add_player(self, name_tournament, id_player):
+    def add_player_in_tournament(self, name_tournament, id_player):
         player_data = self.player.find_player(id_player)
         if player_data:
             player_in_tournament = self.find_player_in_tournament(
@@ -117,15 +133,18 @@ class Tournament:
                         {"player_list": player_list},
                         Query().name_tournament == name_tournament,
                     )
-                    print(f"Joueur {player_data['name']} ajouté à {name_tournament}")
+                    return (
+                        True,
+                        f"Joueur {player_data['name']} ajouté à {name_tournament}",
+                    )
                 else:
-                    print(f"{player_data['name']} déjà dans {name_tournament}")
+                    return False, f"{player_data['name']} déjà dans {name_tournament}"
             else:
-                print("tournoi inexistant")
+                return False, "tournoi inexistant"
         else:
-            print("Joueur inéxistant")
+            return False, "Joueur inexistant"
 
-    def remove_player(self, name_tournament, id_player):
+    def remove_player_in_tournament(self, name_tournament, id_player):
         player_in_tournament = self.find_player_in_tournament(
             name_tournament, id_player
         )
@@ -137,7 +156,7 @@ class Tournament:
                 if player.get("national_id") == id_player:
                     player_list.remove(player)
                     print(f"Joueur {player['name']} retiré du {name_tournament}")
-                    break
+                    return True
             self.tournament.update(
                 {"player_list": player_list},
                 Query().name_tournament == name_tournament,
@@ -189,7 +208,7 @@ class Round:
             "round_index": round_index,
             "start_date": start_date.strftime("%H:%M"),
             "end_date": end_date.strftime("%H:%M"),
-            "game_list": []
+            "game_list": [],
         }
         round_table.insert(round_data)
 
@@ -213,6 +232,17 @@ class Round:
         if round_data and round_table:
             return round_data
 
+    def remove_round(self, name_tournament, round_index):
+        self.tournament.initialize_db(name_tournament)
+        round_table = self.tournament.db_tournament.table("rounds")
+        round_data = round_table.search(Query().round_index == round_index)
+        if round_data:
+            round_table.remove(Query().round_index == round_index)
+            print(f"Round {round_index} supprimé avec succès")
+            return True
+        else:
+            return None
+
 
 class Game:
 
@@ -224,7 +254,7 @@ class Game:
     def make_game(self, name_tournament, round_index):
         self.tournament.initialize_db(name_tournament)
         tournament_data = self.tournament.find_tournament(name_tournament)
-        round_table = self.tournament.db_tournament.table('rounds')
+        round_table = self.tournament.db_tournament.table("rounds")
         round_data = self.round.find_round(name_tournament, round_index)
         if tournament_data and round_data:
             game_list = round_data.get("game_list", [])
@@ -233,7 +263,7 @@ class Game:
             # Vérifie que les joueurs sont bien un nombre pair
             if num_players % 2 != 0:
                 print("nombre impaire")
-                return
+                return False
             for i in range(0, num_players, 2):
                 player_pair = (player_list[i], player_list[i + 1])
                 game_id = len(game_list) + 1
@@ -249,44 +279,48 @@ class Game:
                 if not pair_already_in_game:
                     game_list.append({"game_id": game_id, "players": player_pair})
             print(game_list)
-            round_table.update({'game_list': game_list}, Query().round_index == round_index)
-                    
-            
-
-            # self.tournament.tournament.update({'rounds': game_list}, Query().name_tournament == name_tournament)
+            round_table.update(
+                {"game_list": game_list}, Query().round_index == round_index
+            )
 
     def play_game(self, name_tournament, round_index):
-        round_table = self.round.db_rounds.table(name_tournament)
-        round_data = self.round.find_round(round_index, name_tournament)
+        round_table = self.tournament.db_tournament.table("rounds")
+        round_data = self.round.find_round(name_tournament, round_index)
         if round_data:
             game_list = round_data.get("game_list", [])
             if game_list:
                 for game in game_list:
-                    time.sleep(1)
-                    # Initialise un pourcentage de victoire et de match nul
+                    time.sleep(0.7)
+                    # Remet le score a 0 pour avoir un score unique par match
+                    for player in game["players"]:
+                        player["score"] = 0
                     win_pourcentage = 0.3
                     result = random.random()
                     if result > win_pourcentage:
                         winner = random.choice(game["players"])
                         winner_index = game["players"].index(winner)
                         game["players"][winner_index]["score"] = 1
-                        print(
-                            f"{winner['name']} à gagner contre {game['players'][1 - winner_index]['name']}"
+                        looser = game["players"][1 - winner_index]
+                        round_table.update(
+                            {"game_list": game_list}, Query().round_index == round_index
                         )
+                        print(f"{winner['name']} à gagner contre {looser['name']}")
                     else:
                         for player in game["players"]:
                             player["score"] = 0.5
+                        round_table.update(
+                            {"game_list": game_list}, Query().round_index == round_index
+                        )
                         print(
                             f"Match nul entre {game['players'][0]['name']} et {game['players'][1]['name']}"
                         )
-                round_table.update({"game_list": game_list})
 
     def end_game(self, name_tournament, round_index):
-        tournament_table = self.tournament.db_tournament.table(name_tournament)
-        round_data = self.round.find_round(round_index, name_tournament)
+        self.tournament.initialize_db(name_tournament)
         tournament_data = self.tournament.find_tournament(name_tournament)
-        game_list = round_data.get("game_list", [])
+        round_data = self.round.find_round(name_tournament, round_index)
         player_list = tournament_data.get("player_list", [])
+        game_list = round_data.get("game_list", [])
         for game in game_list:
             for player in game["players"]:
                 national_id = player["national_id"]
@@ -294,19 +328,24 @@ class Game:
                 for p in player_list:
                     if p["national_id"] == national_id:
                         p["score"] += score_change
-        tournament_table.update({"player_list": player_list})
+        self.tournament.tournament.update({"player_list": player_list})
 
-    def generate_pair_score(self, name_tournament):
-        tournament_table = self.tournament.db_tournament.table(name_tournament)
+    def sorted_score(self, name_tournament):
+        self.tournament.initialize_db(name_tournament)
         tournament_data = self.tournament.find_tournament(name_tournament)
         if tournament_data:
             player_list = tournament_data.get("player_list", [])
             sorted_players = sorted(player_list, key=lambda x: x["score"], reverse=True)
-            tournament_table.update({"player_list": sorted_players})
+            self.tournament.tournament.update({"player_list": sorted_players})
+            tournament_winner = sorted_players[0]["name"]
+            # Retourne le gagnant du tournoi en appelant la mehode à la fin du tournoi
+            return tournament_winner
 
 
 class Report:
     def __init__(self):
+        if not os.path.exists(FOLDER_EXPORT_DATA):
+            os.makedirs(FOLDER_EXPORT_DATA)
         self.round = Round()
         self.tournament = Tournament()
         self.player = Player()
@@ -317,30 +356,6 @@ class Report:
     def player_report(self):
         player_data = self.player.players.all()
         sorted_players = sorted(player_data, key=lambda x: x["name"])
-        return sorted_players
-
-    def export_players_to_file(self, data, file_path):
-        with open(file_path, "w") as file:
-            for item in data:
-                file.write(f"{item}\n")
-        print("Données exporté")
-
-    def export_tournament_to_file(self, data, file_path):
-        with open(file_path, "a") as file:
-            file.write(str(data) + "\n")
-        print("Données exportées avec succès.")
-
-    def export_player_in_tournament(self, data, file_path, name_tournament):
-        with open(file_path, "w") as file:
-            file.write(f"Tournoi: {name_tournament}\n")
-            for item in data:
-                file.write(f"{item}\n")
-        print("Données exportées avec succès.")
-
-    def player_in_tournament_report(self, name_tournament):
-        tournament_data = self.tournament.find_tournament(name_tournament)
-        player_list = tournament_data.get("player_list", [])
-        sorted_players = sorted(player_list, key=lambda x: x["name"])
         return sorted_players
 
     def tournament_report(self, name_tournament):
@@ -357,56 +372,69 @@ class Report:
             print("Le tournoi spécifié n'existe pas.")
             return None
 
+    def player_in_tournament_report(self, name_tournament):
+        tournament_data = self.tournament.find_tournament(name_tournament)
+        player_list = tournament_data.get("player_list", [])
+        sorted_players = sorted(player_list, key=lambda x: x["name"])
+        return sorted_players
+
+    def export_players_to_file(self, data):
+        try:
+            with open(EXPORT_PLAYERS_PATH, "w") as file:
+                for item in data:
+                    file.write(f"{item}\n")
+        except Exception:
+            return False
+        else:
+            print("Données exportées avec succès.")
+            return True
+
+    def export_tournament_to_file(self, data):
+        try:
+            with open(EXPORT_TOURNAMENT_PATH, "a") as file:
+                file.write(str(data) + "\n")
+        except Exception:
+            return False
+        else:
+            print("Données exporté")
+            return True
+
+    def export_player_in_tournament(self, name_tournament, data):
+        try:
+            with open(EXPORT_PLAYERS_IN_TOURNAMENT_PATH, "w") as file:
+                file.write(f"Tournoi: {name_tournament}\n")
+                for item in data:
+                    file.write(f"{item}\n")
+        except Exception:
+            return False
+        else:
+            print("données exporté")
+            return True
+
     def round_report(self, name_tournament):
-        tournament = self.round.db_rounds.table(
-            name_tournament
-        )  # Sélectionne la table correspondant au nom du tournoi
-        rounds_info = tournament.all()
+        tournament_data = self.tournament.find_tournament(name_tournament)
+        if tournament_data:
+            round_table = self.tournament.db_tournament.table("rounds")
+            all_rounds = round_table.all()
+            return all_rounds
+        else:
+            return False
 
-        report_list = []  # Initialisation d'une liste pour stocker le rapport
-
-        for round_details in rounds_info:
-            round_info = [
-                name_tournament,
-                round_details["round_index"],
-                round_details["start_date"],
-                round_details["end_date"],
-            ]
-            games_list = []  # Liste pour stocker les parties du round
-            for game in round_details["game_list"]:
-                game_info = [
-                    game["game_id"]
-                ]  # Liste pour stocker les informations sur la partie
-                players_info = (
-                    []
-                )  # Liste pour stocker les informations sur les joueurs de la partie
-                for player in game["players"]:
-                    player_info = [
-                        player["name"],
-                        player["national_id"],
-                        player["score"],
-                    ]  # Liste pour stocker les informations sur le joueur
-                    players_info.append(player_info)
-                game_info.append(players_info)
-                games_list.append(game_info)
-            round_info.append(games_list)
-            report_list.append(round_info)
-
-        return report_list  # Retourne la liste contenant le rapport sur les rounds et les parties
-
-    def export_round_to_file(self, data, file_path):
-        with open(file_path, "w") as file:
-            for round_info in data:
-                file.write(f"Tournament Type: {round_info[0]}\n")
-                file.write(f"Round Index: {round_info[1]}\n")
-                file.write(f"Start Date: {round_info[2]}\n")
-                file.write(f"End Date: {round_info[3]}\n")
-                file.write("Game List:\n")
-                for game_info in round_info[4]:
-                    file.write(f"Game ID: {game_info[0]}\n")
-                    for player_info in game_info[1]:
-                        file.write(
-                            f"Player: {player_info[0]}, National ID: {player_info[1]}, Score: {player_info[2]}\n"
-                        )
-                file.write("\n")
-        print("Données exportées")
+    def export_round_to_file(self, data):
+        try:
+            with open(EXPORT_ROUNDS_PATH, "w") as file:
+                for round_info in data:
+                    file.write(f"Round Index: {round_info['round_index']}\n")
+                    file.write(f"Start Date: {round_info['start_date']}\n")
+                    file.write(f"End Date: {round_info['end_date']}\n")
+                    file.write("Game List:\n")
+                    for game_info in round_info["game_list"]:
+                        file.write(f"    Game ID: {game_info['game_id']}\n")
+                        for player_info in game_info["players"]:
+                            file.write(
+                                f"        Player: {player_info['name']}, National ID: {player_info['national_id']}, Score: {player_info['score']}\n"
+                            )
+                    file.write("\n")
+            print("Données exportées")
+        except Exception:
+            return False
