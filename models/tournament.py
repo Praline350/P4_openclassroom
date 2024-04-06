@@ -31,8 +31,9 @@ class Tournament:
             "end_date": end_date,
             "actual_round": 0,
             "winner": "",
-            "player_list": [],
             "description": "",
+            "player_list": [],
+            
         }
         self.tournament.insert(self.data)
 
@@ -40,10 +41,8 @@ class Tournament:
         file_path = f"data/data_tournament/{name_tournament}.json"
         if os.path.exists(file_path):
             os.remove(file_path)
-            print("Tournoi supprimé avec succès.")
             return True
         else:
-            print("Tournoi inexistant.")
             return False
 
     def add_player_in_tournament(self, name_tournament, id_player):
@@ -69,14 +68,10 @@ class Tournament:
                     )
                     return (
                         True,
-                        f"Joueur {player_data['name']}"
-                        f"ajouté à {name_tournament}"
+                        f"Joueur {player_data['name']} " f"ajouté à {name_tournament}",
                     )
                 else:
-                    return (
-                        True,
-                        f"{player_data['name']} déjà dans {name_tournament}"
-                    )
+                    return (False, f"{player_data['name']} déjà dans {name_tournament}")
             else:
                 return False, "tournoi inexistant"
         else:
@@ -93,14 +88,14 @@ class Tournament:
             for player in player_list:
                 if player.get("national_id") == id_player:
                     player_list.remove(player)
-                    print(
-                        f"Joueur {player['name']} retiré du {name_tournament}"
-                        )
-                    return True
+
             self.tournament.update(
                 {"player_list": player_list},
                 Query().name_tournament == name_tournament,
             )
+            return True
+        else:
+            return False
 
     def find_tournament(self, name_tournament):
         file_path = f"data/data_tournament/{name_tournament}.json"
@@ -120,8 +115,17 @@ class Tournament:
             player_in_tournament = any(
                 player["national_id"] == id_player for player in player_list
             )
-            # retourne True si le joueur est dans le tournoi
+
             return player_in_tournament
+
+    def get_ids_in_tournament(self, name_tournament):
+        tournament_data = self.find_tournament(name_tournament)
+        if tournament_data:
+            player_list = tournament_data.get("player_list", [])
+            player_ids = [player["national_id"] for player in player_list]
+            return player_ids
+        else:
+            return False
 
     def get_name_tournaments(self):
         names_tournament = []
@@ -129,7 +133,31 @@ class Tournament:
             name_tournament = os.path.splitext(filename)[0]
             names_tournament.append(name_tournament)
         return names_tournament
+    
+    def get_round_index(self, name_tournament):
+        self.initialize_db(name_tournament)
+        round_table = self.db_tournament.table('rounds')
+        round_index = len(round_table)
+        return round_index
 
+    def get_actual_round(self, name_tournament):
+        tournament_data = self.find_tournament(name_tournament)
+        if tournament_data:
+            actual_round = tournament_data.get('actual_round')
+            return actual_round
+        
+    def get_rounds_number(self, name_tournament):
+        tournament_data = self.find_tournament(name_tournament)
+        if tournament_data:
+            rounds_number = tournament_data.get('rounds_number')
+            return rounds_number
+        
+    def check_for_end(self, name_tournament):
+        actual_round = self.get_actual_round(name_tournament)
+        rounds_number = self.get_rounds_number(name_tournament) 
+        if actual_round == rounds_number:
+            return True
+        
     def end_tournament(self, name_tournament):
         self.initialize_db(name_tournament)
         tournament_data = self.find_tournament(name_tournament)
@@ -144,4 +172,14 @@ class Tournament:
                 {"winner": tournament_winner},
                 Query().name_tournament == name_tournament,
             )
+            
             return tournament_winner
+
+    def add_description(self, name_tournament, data):
+        self.initialize_db(name_tournament)
+        tournament_data = self.find_tournament(name_tournament)
+        if tournament_data:
+            self.tournament.update(
+                {"description": data},
+                Query().name_tournament == name_tournament
+            )

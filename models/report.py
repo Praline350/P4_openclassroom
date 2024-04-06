@@ -30,8 +30,7 @@ class Report:
         if isinstance(data, list):
             for i in range(len(data)):
                 data[i] = (
-                    str(data[i]).replace("{", "").replace("}", ""),
-                    str(data[i]).replace("'", ""),
+                    str(data[i]).replace("{", "").replace("}", "").replace("'", "")
                 )
             return data
         elif isinstance(data, dict):
@@ -43,7 +42,8 @@ class Report:
     def player_report(self):
         player_data = self.player.players.all()
         sorted_players = sorted(player_data, key=lambda x: x["name"])
-        return sorted_players
+        data = self.format_report(sorted_players)
+        return data
 
     def tournament_report(self, name_tournament):
         tournament_data = self.tournament.find_tournament(name_tournament)
@@ -53,17 +53,20 @@ class Report:
                 "localisation": tournament_data["localisation"],
                 "start_date": tournament_data["start_date"],
                 "end_date": tournament_data["end_date"],
+                "actual_round": tournament_data['actual_round'],
+                "winner": tournament_data['winner']
             }
-            return filtered_data
+            data = self.format_report(filtered_data)
+            return data
         else:
-            print("Le tournoi spécifié n'existe pas.")
-            return None
+            return False
 
     def player_in_tournament_report(self, name_tournament):
         tournament_data = self.tournament.find_tournament(name_tournament)
         player_list = tournament_data.get("player_list", [])  # type: ignore
         sorted_players = sorted(player_list, key=lambda x: x["name"])
-        return sorted_players
+        data = self.format_report(sorted_players)
+        return data
 
     def export_players_to_file(self, data):
         try:
@@ -73,7 +76,6 @@ class Report:
         except Exception:
             return False
         else:
-            print("Données exportées avec succès.")
             return True
 
     def export_tournament_to_file(self, data):
@@ -83,7 +85,6 @@ class Report:
         except Exception:
             return False
         else:
-            print("Données exporté")
             return True
 
     def export_player_in_tournament(self, name_tournament, data):
@@ -95,7 +96,6 @@ class Report:
         except Exception:
             return False
         else:
-            print("données exporté")
             return True
 
     def round_report(self, name_tournament):
@@ -103,27 +103,35 @@ class Report:
         if tournament_data:
             round_table = self.tournament.db_tournament.table("rounds")
             all_rounds = round_table.all()
-            return all_rounds
+            data = self.format_round(all_rounds)
+            return data
         else:
             return False
+        
+    def format_round(self, data):
+        formatted_data = ""
+        for round_info in data:
+            formatted_data += f"Round Index: {round_info['round_index']}\n"
+            formatted_data += f"Start Date: {round_info['start_date']}\n"
+            formatted_data += f"End Date: {round_info['end_date']}\n"
+            formatted_data += "Game List:\n"
+            for game_info in round_info["game_list"]:
+                formatted_data += f"    Game ID: {game_info['game_id']}\n"
+                for player_info in game_info["players"]:
+                    formatted_data += (
+                        f"        Player: {player_info['name']}, "
+                        f"National ID: {player_info['national_id']}, "
+                        f"Score: {player_info['score']}\n"
+                    )
+            formatted_data += "\n"
+        return formatted_data
+
 
     def export_round_to_file(self, data):
         try:
             with open(EXPORT_ROUNDS_PATH, "w") as file:
-                for round_info in data:
-                    file.write(f"Round Index: {round_info['round_index']}\n")
-                    file.write(f"Start Date: {round_info['start_date']}\n")
-                    file.write(f"End Date: {round_info['end_date']}\n")
-                    file.write("Game List:\n")
-                    for game_info in round_info["game_list"]:
-                        file.write(f"    Game ID: {game_info['game_id']}\n")
-                        for player_info in game_info["players"]:
-                            file.write(
-                                f"        Player: {player_info['name']}, "
-                                f"National ID: {player_info['national_id']}, "
-                                f"Score: {player_info['score']}\n"
-                            )
-                    file.write("\n")
-            print("Données exportées")
+                file.write(data)     
         except Exception:
             return False
+        else:
+            return True

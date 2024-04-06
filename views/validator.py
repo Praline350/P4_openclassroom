@@ -1,6 +1,6 @@
 import re
 import questionary
-
+from datetime import datetime
 
 class Validator:
 
@@ -17,14 +17,13 @@ class Validator:
                 return user_input
 
     def validate_date(self, prompt):
-        pattern = r"^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-(\d{4})$"
-
         while True:
             user_input = questionary.text(prompt).ask()
-            if re.match(pattern, user_input):
+            try:
+                datetime.strptime(user_input, '%d-%m-%Y')
                 return user_input
-            else:
-                print("Format invalide = > (JJ-MM-AAAA)")
+            except ValueError:
+                print("Format invalide => (JJ-MM-AAAA)")
 
     def validate_national_id(self, prompt):
         while True:

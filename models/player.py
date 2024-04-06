@@ -27,7 +27,15 @@ class Player:
             "national_id": national_id,
         }
         self.players.insert(self.data)
+        return national_id
 
+    def player_exists(self, national_id):
+        existing_player = self.players.get(Query().national_id == national_id)
+        if existing_player:
+            return True
+        else:
+            return False
+        
     def find_player(self, national_id):
         # Recherche d'un joueur par son ID national
         player_data = self.players.search(Query().national_id == national_id)

@@ -25,7 +25,6 @@ class Game:
             num_players = len(player_list)
             # Vérifie que les joueurs sont bien un nombre pair
             if num_players % 2 != 0:
-                print("nombre impaire")
                 return False
             for i in range(0, num_players, 2):
                 player_pair = (player_list[i], player_list[i + 1])
@@ -42,7 +41,6 @@ class Game:
                     game_list.append(
                         {"game_id": game_id, "players": player_pair}
                         )
-            print(game_list)
             round_table.update(
                 {"game_list": game_list}, Query().round_index == round_index
             )
@@ -50,11 +48,11 @@ class Game:
     def play_game(self, name_tournament, round_index):
         round_table = self.tournament.db_tournament.table("rounds")
         round_data = self.round.find_round(name_tournament, round_index)
+        result_list = []
         if round_data:
             game_list = round_data.get("game_list", [])  # type: ignore
             if game_list:
                 for game in game_list:
-                    time.sleep(0.7)
                     # Remet le score a 0 pour avoir un score unique par match
                     for player in game["players"]:
                         player["score"] = 0
@@ -69,10 +67,7 @@ class Game:
                             {"game_list": game_list},
                             Query().round_index == round_index
                         )
-                        print(
-                            f"{winner['name']} à gagner"
-                            f"contre {looser['name']}"
-                            )
+                        result_list.append(("win", winner['name'], looser['name']))
                     else:
                         for player in game["players"]:
                             player["score"] = 0.5
@@ -80,10 +75,16 @@ class Game:
                             {"game_list": game_list},
                             Query().round_index == round_index
                         )
-                        print(
-                            f"Match nul entre {game['players'][0]['name']}"
-                            f"et {game['players'][1]['name']}"
-                        )
+                        player1_name = game['players'][0]['name']
+                        player2_name = game['players'][1]['name']
+                        result_list.append(("draw", player1_name, player2_name))
+        return result_list
+    
+    def get_num_game(self, name_tournament, round_index):
+        round_data = self.round.find_round(name_tournament, round_index)
+        if round_data:
+            game_list = round_data.get('game_list', [])
+            return len(game_list)
 
     def end_game(self, name_tournament, round_index):
         self.tournament.initialize_db(name_tournament)

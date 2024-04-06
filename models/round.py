@@ -52,7 +52,9 @@ class Round:
         round_data = round_table.get(Query().round_index == round_index)
         if round_data and round_table:
             return round_data
-
+        
+    
+    
     def remove_round(self, name_tournament, round_index):
         self.tournament.initialize_db(name_tournament)
         round_table = self.tournament.db_tournament.table("rounds")

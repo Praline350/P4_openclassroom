@@ -6,6 +6,10 @@ class PromptForm:
 
     def __init__(self):
         self.validator = Validator()
+        
+    def prompt_national_id(self):
+        national_id = self.validator.validate_national_id("Entrez l'IDN : ")
+        return national_id
 
     def prompt_for_add_player(self):
         print("------AJOUTER UN JOUEUR------")
@@ -15,9 +19,8 @@ class PromptForm:
         birth_date = self.validator.validate_date(
             "Entrez la date de naissance (JJ-MM-AAAA): "
         )
-        national_id = self.validator.validate_national_id("Entrez l'IDN : ")
-
-        return surname, name, birth_date, national_id
+    
+        return surname, name, birth_date
 
     def prompt_for_add_tournament(self):
         print("------AJOUTER UN TOURNOIS------")
@@ -38,15 +41,6 @@ class PromptForm:
 
         return name_tournament, localisation, round, start_date, end_date
 
-    def tournament_add_player(self):
-        print("---AJOUTER UN JOUEUR A UN TOURNOI---")
-
-        id_player = self.validator.validate_national_id(
-            "Entrez l'ID National du joueur : "
-        )
-
-        return id_player
-
     def prompt_for_id_list(self, players_ids):
         id_player = questionary.select("Liste des joueurs",
                                        choices=players_ids
@@ -66,6 +60,10 @@ class PromptForm:
             "Quel tournoi supprimé ?", choices=tournament_list
         ).ask()
         return name_tournament
+    
+    def prompt_for_add_description(self):
+        description = questionary.text("Ajouter une description ?").ask()
+        return description
 
     def prompt_continue_tournament(self):
         print("---Tournoi en cours---")
@@ -73,21 +71,23 @@ class PromptForm:
             "Passer au prochain Round ?", choices=["YES", "NO"]
         ).ask()
         return user_input
-
-    def prompt_for_remove_player(self, tournament_list):
+    
+    def prompt_play_round(self, round_index):
+        print(f"----DEBUT ROUND {round_index}-----")
+        user_input = questionary.select("Jouer le round ?", choices=['YES', 'NO']).ask()
+        return user_input 
+    
+    def prompt_for_remove_player_in_tournament(self, tournament_list):
         print("-----Supprimer un joueur du tournoi-----")
 
         name_tournament = questionary.select(
             "De quel tournoi ?", choices=tournament_list
         ).ask()
-        id_player = self.validator.validate_national_id(
-            "Entrez l'ID du joueur à supprimé : "
-        )
-        return name_tournament, id_player
+        return name_tournament
 
     def prompt_continue_add(self):
         user_input = questionary.select(
-            "Ajouter un autre ?", choices=["YES", "NO"]
+            "Un autre ?", choices=["YES", "NO"]
         ).ask()
         return user_input
 
@@ -102,3 +102,8 @@ class PromptForm:
             "quel tournoi ?", choices=tournament_list
         ).ask()
         return name_tournament
+    
+    def prompt_secure(self):
+        user_input = questionary.select("Vous êtes sûre ? ", choices=["YES", "NO"]).ask()
+        return user_input
+    

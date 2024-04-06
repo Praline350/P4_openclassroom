@@ -14,7 +14,7 @@ class Menu:
             choices=[
                 "Menu joueur",
                 "Menu tournois",
-                "Commencer un tournoi",
+                "Jouer un tournoi",
                 "Rapports",
                 "Sortir",
             ],
@@ -28,6 +28,7 @@ class Menu:
             "------MENU JOUEUR-----",
             choices=[
                 "Ajouter un joueur",
+                "Supprimer un joueur",
                 "Retour",
                 "Sortir"
                 ]
@@ -44,6 +45,7 @@ class Menu:
                 "Ajouter un joueur au tournoi",
                 "Supprimer un joueur du tournoi",
                 "Supprimer un tournoi",
+                "Ajouter une description",
                 "Retour",
                 "Sortir",
             ],
@@ -62,9 +64,9 @@ class Menu:
             "----Quel rapport voulez vous ? ----",
             choices=[
                 "Liste de tous les joueurs",
-                "Liste de tous les tournois",
-                "Liste des joueur dans le tournoi",
-                "Liste des tour et matchs d'un tournoi",
+                "Informations tournoi",
+                "Liste des joueurs dans un tournoi",
+                "Liste des tours et matchs d'un tournoi",
                 "Retour",
                 "Sortir",
             ],
