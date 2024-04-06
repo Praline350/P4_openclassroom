@@ -42,3 +42,7 @@ class DisplayMessage:
     def display_end_tournament(self, winner):
         print(f"TOURNOI TERMINER \n Gagnant : {winner}")
 
+
+    def display_birthday(self, name):
+        print(f"On souhaite un joyeux anniversaire à {name} !! :D ")
+

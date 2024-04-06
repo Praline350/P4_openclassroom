@@ -1,6 +1,6 @@
-import re
 import questionary
 from datetime import datetime
+
 
 class Validator:
 

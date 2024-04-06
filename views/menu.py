@@ -46,6 +46,7 @@ class Menu:
                 "Supprimer un joueur du tournoi",
                 "Supprimer un tournoi",
                 "Ajouter une description",
+                "Faire une sauvegarde du tournoi",
                 "Retour",
                 "Sortir",
             ],

@@ -64,6 +64,17 @@ class PromptForm:
     def prompt_for_add_description(self):
         description = questionary.text("Ajouter une description ?").ask()
         return description
+    
+    def prompt_for_begin_tournament(self):
+        user_input = questionary.select("Débuter/Continuer ou reprendre une sauvegarde ?",
+                                        choices=['Commencer/Continuer', "Backup"]).ask()
+        return user_input
+    
+    def prompt_for_backup(self, backup_list):
+        backup_name = questionary.select("Quel backup ?", 
+                                         choices=backup_list).ask()
+        return backup_name
+    
 
     def prompt_continue_tournament(self):
         print("---Tournoi en cours---")
@@ -106,4 +117,4 @@ class PromptForm:
     def prompt_secure(self):
         user_input = questionary.select("Vous êtes sûre ? ", choices=["YES", "NO"]).ask()
         return user_input
-    
+

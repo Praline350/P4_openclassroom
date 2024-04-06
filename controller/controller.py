@@ -1,9 +1,12 @@
 from views.menu import Menu
 from views.prompt_form import PromptForm
+from views.display_message import DisplayMessage
 from .controller_game import ControllerGame
 import sys
-import keyboard
 from .controller_menu import ControllerMenu
+from models.player import Player
+import time
+
 
 JSON_DATA_PLAYERS_PATH = "data/data_players.json"
 JSON_DATA_TOURNAMENTS_PATH = "data/data_tournaments.json"
@@ -15,12 +18,13 @@ class ControllerManager:
         self.menu = Menu()
         self.controller = ControllerMenu()
         self.controller_game = ControllerGame()
-
-    def check_to_stop(self):
-        if keyboard.is_pressed("space"):
-            return False
+        self.player = Player()
+        self.diplay = DisplayMessage()
 
     def menu_choice(self):
+        name = self.player.check_birday()
+        if name:
+            self.diplay.display_birthday(name)
         while True:
             user_input = self.menu.menu_index()
             match user_input:
@@ -83,6 +87,8 @@ class ControllerManager:
                     self.controller.menu_remove_player_in_tournament()
                 case "Supprimer un tournoi":
                     self.controller.menu_remove_tournament()
+                case "Faire une sauvegarde du tournoi":
+                    self.controller.menu_save_tournament()
                 case "Ajouter une description":
                     self.controller.menu_add_description()
                 case "Retour":
@@ -91,5 +97,3 @@ class ControllerManager:
                     sys.exit()
                 case _:
                     print("Choix invalide")
-
-

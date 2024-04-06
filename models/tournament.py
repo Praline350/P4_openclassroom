@@ -1,8 +1,11 @@
 from .player import Player
 from tinydb import TinyDB, Query
 import os
+from datetime import datetime
+import shutil
 
 FOLDER_DATA_TOURNAMENTS_PATH = "data/data_tournament"
+FOLDER_BACKUP_TOURNAMENT_PATH = "data/backup_tournament"
 
 
 class Tournament:
@@ -13,6 +16,8 @@ class Tournament:
         if not os.path.exists(FOLDER_DATA_TOURNAMENTS_PATH):
             os.makedirs(FOLDER_DATA_TOURNAMENTS_PATH)
         # Initialisation des requêtes pour les joueurs et les tournois
+        if not os.path.exists(FOLDER_BACKUP_TOURNAMENT_PATH):
+            os.makedirs(FOLDER_BACKUP_TOURNAMENT_PATH)
 
     def initialize_db(self, name_tournament):
         file_path = f"data/data_tournament/{name_tournament}.json"
@@ -33,7 +38,6 @@ class Tournament:
             "winner": "",
             "description": "",
             "player_list": [],
-            
         }
         self.tournament.insert(self.data)
 
@@ -133,31 +137,38 @@ class Tournament:
             name_tournament = os.path.splitext(filename)[0]
             names_tournament.append(name_tournament)
         return names_tournament
-    
+
+    def get_name_backup(self):
+        name_backup = []
+        for filename in os.listdir(FOLDER_BACKUP_TOURNAMENT_PATH):
+            name_tournament = os.path.splitext(filename)[0]
+            name_backup.append(name_tournament)
+        return name_backup
+
     def get_round_index(self, name_tournament):
         self.initialize_db(name_tournament)
-        round_table = self.db_tournament.table('rounds')
+        round_table = self.db_tournament.table("rounds")
         round_index = len(round_table)
         return round_index
 
     def get_actual_round(self, name_tournament):
         tournament_data = self.find_tournament(name_tournament)
         if tournament_data:
-            actual_round = tournament_data.get('actual_round')
+            actual_round = tournament_data.get("actual_round")
             return actual_round
-        
+
     def get_rounds_number(self, name_tournament):
         tournament_data = self.find_tournament(name_tournament)
         if tournament_data:
-            rounds_number = tournament_data.get('rounds_number')
+            rounds_number = tournament_data.get("rounds_number")
             return rounds_number
-        
+
     def check_for_end(self, name_tournament):
         actual_round = self.get_actual_round(name_tournament)
-        rounds_number = self.get_rounds_number(name_tournament) 
+        rounds_number = self.get_rounds_number(name_tournament)
         if actual_round == rounds_number:
             return True
-        
+
     def end_tournament(self, name_tournament):
         self.initialize_db(name_tournament)
         tournament_data = self.find_tournament(name_tournament)
@@ -172,14 +183,33 @@ class Tournament:
                 {"winner": tournament_winner},
                 Query().name_tournament == name_tournament,
             )
-            
+
             return tournament_winner
+
+    def save_in_backup(self, name_tournament):
+        tournament_file = f"{name_tournament}.json"
+        tournament_path = os.path.join(FOLDER_DATA_TOURNAMENTS_PATH, tournament_file)
+        current_date = datetime.now().strftime("%Y-%m-%d_%Hh%Mm")
+        backup_filename = f"{name_tournament}_{current_date}.json"
+        backup_path = os.path.join(FOLDER_BACKUP_TOURNAMENT_PATH, backup_filename)
+        success = shutil.copy(tournament_path, backup_path)
+        return success
+
+    def restore_backup(self, backup_name):
+        backup_path = os.path.join(FOLDER_BACKUP_TOURNAMENT_PATH, f"{backup_name}.json")
+        name_tournament = backup_name.split("_")[0]
+        path = os.path.join(FOLDER_DATA_TOURNAMENTS_PATH, f"{name_tournament}.json")
+        print(backup_path, path)
+        shutil.copy(backup_path, path)
+        return name_tournament
 
     def add_description(self, name_tournament, data):
         self.initialize_db(name_tournament)
         tournament_data = self.find_tournament(name_tournament)
         if tournament_data:
             self.tournament.update(
-                {"description": data},
-                Query().name_tournament == name_tournament
+                {"description": data}, Query().name_tournament == name_tournament
             )
+            return True
+        else:
+            return False

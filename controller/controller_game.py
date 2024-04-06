@@ -17,9 +17,21 @@ class ControllerGame:
         self.display = DisplayMessage()
 
     def begin_tournament(self):
-        tournament_list = self.tournament.get_name_tournaments()
-        name_tournament = self.menu.menu_begin_tournament(tournament_list)
-        self.play_round(name_tournament)
+        user_input = self.form.prompt_for_begin_tournament()
+        match user_input:
+            case "Commencer/Continuer":
+                tournament_list = self.tournament.get_name_tournaments()
+                name_tournament = self.menu.menu_begin_tournament(tournament_list)
+                self.tournament.save_in_backup(name_tournament)
+                self.play_round(name_tournament)
+            case "Backup":
+                backup_list = self.tournament.get_name_backup()
+                backup_name = self.form.prompt_for_backup(backup_list)
+                print(backup_name)
+                user_input = self.form.prompt_secure()
+                if user_input == "YES":
+                    name_tournament = self.tournament.restore_backup(backup_name)
+                    self.play_round(name_tournament)
 
     def play_round(self, name_tournament):
         while True:
@@ -44,7 +56,6 @@ class ControllerGame:
                     break
             else:
                 break
-
 
     def end_of_tournament(self, name_tournament):
         winner = self.tournament.end_tournament(name_tournament)

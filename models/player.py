@@ -1,6 +1,7 @@
 from tinydb import TinyDB, Query
 import os
 import json
+from datetime import datetime
 
 JSON_DATA_PLAYERS_PATH = "data/data_players.json"
 
@@ -65,3 +66,13 @@ class Player:
         player_data = self.players.search(Query().national_id == national_id)
         if not player_data:
             return True  # retourne true si le joueur est suppr
+
+    def check_birday(self):
+        player_data = self.players.all()
+        today = datetime.today()
+        for player in player_data:
+            birth_date = datetime.strptime(player.get("birth_date", ""), "%d-%m-%Y")
+            if birth_date.month == today.month and birth_date.day == today.day:
+                player_name = f"{player.get('name', '')} {player.get('surname', '')}"
+                return player_name
+        return None

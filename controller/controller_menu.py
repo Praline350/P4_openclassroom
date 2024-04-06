@@ -185,8 +185,21 @@ class ControllerMenu:
             if user_input == "NO":
                 break
 
+    def menu_save_tournament(self):
+        tournament_list = self.tournament.get_name_tournaments()
+        name_tournament = self.form.prompt_data_tournament(tournament_list)
+        bool = self.tournament.save_in_backup(name_tournament)
+        if bool:
+            self.display.display_success(bool)
+        else:
+            self.display.display_success(bool)
+
     def menu_add_description(self):
         tournament_list = self.tournament.get_name_tournaments()
         name_tournament = self.form.prompt_data_tournament(tournament_list)
         description = self.form.prompt_for_add_description()
-        self.tournament.add_description(name_tournament, description)
+        bool = self.tournament.add_description(name_tournament, description)
+        if bool:
+            self.display.display_success(bool)
+        else:
+            self.display.display_success(bool)
