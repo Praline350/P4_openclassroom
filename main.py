@@ -1,7 +1,4 @@
-from models import Player, Tournament
-from controller import Controller
-from view import PromptForm, Menu
+from controller.controller import ControllerManager
 
-controller = Controller()
+controller = ControllerManager()
 controller.menu_choice()
-
