@@ -5,11 +5,6 @@ from .controller_game import ControllerGame
 import sys
 from .controller_menu import ControllerMenu
 from models.player import Player
-import time
-
-
-JSON_DATA_PLAYERS_PATH = "data/data_players.json"
-JSON_DATA_TOURNAMENTS_PATH = "data/data_tournaments.json"
 
 
 class ControllerManager:

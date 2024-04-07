@@ -64,7 +64,7 @@ class ControllerMenu:
             if bool:
                 user_input = self.form.prompt_export()
             if user_input == "YES":
-                self.report.export_round_to_file(data)
+                self.report.export_round_to_file(name_tournament, data)
                 break
             else:
                 break

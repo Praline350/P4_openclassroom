@@ -9,9 +9,9 @@ import os
 FOLDER_EXPORT_DATA = "export_data"
 EXPORT_PLAYERS_PATH = "export_data/export_players.txt"
 EXPORT_PLAYERS_IN_TOURNAMENT_PATH = (
-    "export_data/export_player_in_tournament.txt"
+    "export_data/export_player_in_tournament"
 )
-EXPORT_ROUNDS_PATH = "export_data/export_rounds.txt"
+EXPORT_ROUNDS_PATH = "export_data/export_rounds"
 EXPORT_TOURNAMENT_PATH = "export_data/export_tournament.txt"
 
 
@@ -89,8 +89,7 @@ class Report:
 
     def export_player_in_tournament(self, name_tournament, data):
         try:
-            with open(EXPORT_PLAYERS_IN_TOURNAMENT_PATH, "w") as file:
-                file.write(f"Tournoi: {name_tournament}\n")
+            with open(f"{EXPORT_PLAYERS_IN_TOURNAMENT_PATH}_{name_tournament}.txt", "w") as file:
                 for item in data:
                     file.write(f"{item}\n")
         except Exception:
@@ -127,9 +126,9 @@ class Report:
         return formatted_data
 
 
-    def export_round_to_file(self, data):
+    def export_round_to_file(self,name_tournament, data):
         try:
-            with open(EXPORT_ROUNDS_PATH, "w") as file:
+            with open(f"{EXPORT_ROUNDS_PATH}_{name_tournament}.txt", "w") as file:
                 file.write(data)     
         except Exception:
             return False

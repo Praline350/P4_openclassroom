@@ -199,7 +199,6 @@ class Tournament:
         backup_path = os.path.join(FOLDER_BACKUP_TOURNAMENT_PATH, f"{backup_name}.json")
         name_tournament = backup_name.split("_")[0]
         path = os.path.join(FOLDER_DATA_TOURNAMENTS_PATH, f"{name_tournament}.json")
-        print(backup_path, path)
         shutil.copy(backup_path, path)
         return name_tournament
 

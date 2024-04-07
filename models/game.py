@@ -80,6 +80,41 @@ class Game:
                         result_list.append(("draw", player1_name, player2_name))
         return result_list
     
+    def get_game_player(self, name_tournament, round_index):
+        round_data = self.round.find_round(name_tournament, round_index)
+        players_list = []
+        game_list = round_data.get("game_list", [])
+        for game in game_list:
+            for player in game['players']:
+                player["score"] = 0
+            players_list.append((game['players'][0]['name'], game['players'][1]['name']))
+        return players_list
+    
+    def update_scores(self, name_tournament, round_index, results):
+        self.tournament.initialize_db(name_tournament)
+        round_table = self.tournament.db_tournament.table("rounds")
+        round_data = self.round.find_round(name_tournament, round_index)
+        if round_data:
+            game_list = round_data.get("game_list", [])
+            if game_list:
+                for game, result in zip(game_list, results):
+                    for player in game["players"]:
+                        player["score"] = 0
+                    # Mettre à jour le score en fonction du résultat du match
+                    if result != "Match nul":
+                        winner_name = result
+                        for player in game["players"]:
+                            if player["name"] == winner_name:
+                                player["score"] += 1  # Ajouter un point au gagnant
+                    else:
+                        for player in game["players"]:
+                            player["score"] += 0.5  # Ajouter 0.5 point à chaque joueur en cas de match nul
+                    
+                # Mettre à jour la base de données avec les scores mis à jour
+                round_table.update({"game_list": game_list}, Query().round_index == round_index)
+        
+
+    
     def get_num_game(self, name_tournament, round_index):
         round_data = self.round.find_round(name_tournament, round_index)
         if round_data:

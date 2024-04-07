@@ -1,5 +1,6 @@
 from .validator import Validator
 import questionary
+from questionary import Choice
 
 
 class PromptForm:
@@ -87,6 +88,28 @@ class PromptForm:
         print(f"----DEBUT ROUND {round_index}-----")
         user_input = questionary.select("Jouer le round ?", choices=['YES', 'NO']).ask()
         return user_input 
+    
+    def prompt_for_get_winner(self, player_list):
+        results = []
+        for game in player_list:
+            player1, player2 = game
+            choices = [Choice(title=player1), Choice(title=player2), Choice(title="Match nul")]
+            user_input = questionary.select('Qui a remporté le match? ', choices=choices).ask()
+            results.append(user_input)
+        print(results)
+        return results
+    
+    def promp_for_play_auto(self):
+        user_input = questionary.select("-----Jouer les match automatiquement ?-----",
+                                        choices=["YES", "NO"]).ask()
+        return user_input
+    
+    def prompt_for_save(self):
+        user_input = questionary.select('---Voulez effectuer une backup ?',
+                                        choices=["YES", "NO"]).ask()
+        return user_input
+
+        
     
     def prompt_for_remove_player_in_tournament(self, tournament_list):
         print("-----Supprimer un joueur du tournoi-----")
