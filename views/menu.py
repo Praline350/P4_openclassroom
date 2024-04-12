@@ -15,6 +15,7 @@ class Menu:
                 "Menu joueur",
                 "Menu tournois",
                 "Jouer un tournoi",
+                "Jouer un tournoi d'une sauvegarde",
                 "Rapports",
                 "Sortir",
             ],

@@ -1,16 +1,13 @@
 from .player import Player
 from .tournament import Tournament
 from .round import Round
-from tinydb import Query
 import os
 
 # Chemins vers les fichiers export
 
 FOLDER_EXPORT_DATA = "export_data"
 EXPORT_PLAYERS_PATH = "export_data/export_players.txt"
-EXPORT_PLAYERS_IN_TOURNAMENT_PATH = (
-    "export_data/export_player_in_tournament"
-)
+EXPORT_PLAYERS_IN_TOURNAMENT_PATH = "export_data/export_player_in_tournament"
 EXPORT_ROUNDS_PATH = "export_data/export_rounds"
 EXPORT_TOURNAMENT_PATH = "export_data/export_tournament.txt"
 
@@ -22,15 +19,14 @@ class Report:
         self.round = Round()
         self.tournament = Tournament()
         self.player = Player()
-        self.RoundQuery = Query()
-        self.PlayerQuery = Query()
-        self.TournamentQuery = Query()
 
     def format_report(self, data):
         if isinstance(data, list):
-            for i in range(len(data)):
-                data[i] = (
-                    str(data[i]).replace("{", "").replace("}", "").replace("'", "")
+            for index, item in enumerate(data):
+                data[index] = (
+                    str(item).replace("{", "").replace("}", "").replace(
+                        "'", ""
+                        )
                 )
             return data
         elif isinstance(data, dict):
@@ -53,8 +49,8 @@ class Report:
                 "localisation": tournament_data["localisation"],
                 "start_date": tournament_data["start_date"],
                 "end_date": tournament_data["end_date"],
-                "actual_round": tournament_data['actual_round'],
-                "winner": tournament_data['winner']
+                "actual_round": tournament_data["actual_round"],
+                "winner": tournament_data["winner"],
             }
             data = self.format_report(filtered_data)
             return data
@@ -70,7 +66,7 @@ class Report:
 
     def export_players_to_file(self, data):
         try:
-            with open(EXPORT_PLAYERS_PATH, "w") as file:
+            with open(EXPORT_PLAYERS_PATH, "w", encoding="utf-8") as file:
                 for item in data:
                     file.write(f"{item}\n")
         except Exception:
@@ -80,7 +76,7 @@ class Report:
 
     def export_tournament_to_file(self, data):
         try:
-            with open(EXPORT_TOURNAMENT_PATH, "a") as file:
+            with open(EXPORT_TOURNAMENT_PATH, "a", encoding="utf-8") as file:
                 file.write(str(data) + "\n")
         except Exception:
             return False
@@ -89,7 +85,10 @@ class Report:
 
     def export_player_in_tournament(self, name_tournament, data):
         try:
-            with open(f"{EXPORT_PLAYERS_IN_TOURNAMENT_PATH}_{name_tournament}.txt", "w") as file:
+            with open(
+                f"{EXPORT_PLAYERS_IN_TOURNAMENT_PATH}_{name_tournament}.txt",
+                "w", encoding="utf-8"
+            ) as file:
                 for item in data:
                     file.write(f"{item}\n")
         except Exception:
@@ -106,7 +105,7 @@ class Report:
             return data
         else:
             return False
-        
+
     def format_round(self, data):
         formatted_data = ""
         for round_info in data:
@@ -125,12 +124,18 @@ class Report:
             formatted_data += "\n"
         return formatted_data
 
-
-    def export_round_to_file(self,name_tournament, data):
+    def export_round_to_file(self, name_tournament, data):
         try:
-            with open(f"{EXPORT_ROUNDS_PATH}_{name_tournament}.txt", "w") as file:
-                file.write(data)     
+            with open(
+                f"{EXPORT_ROUNDS_PATH}_{name_tournament}.txt",
+                "w", encoding="utf-8"
+            ) as file:
+                file.write(data)
         except Exception:
             return False
         else:
             return True
+
+
+if __name__ == "__main__":
+    pass

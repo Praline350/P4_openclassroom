@@ -1,8 +1,9 @@
+import shutil
+import os
 from .player import Player
 from tinydb import TinyDB, Query
-import os
 from datetime import datetime
-import shutil
+
 
 FOLDER_DATA_TOURNAMENTS_PATH = "data/data_tournament"
 FOLDER_BACKUP_TOURNAMENT_PATH = "data/backup_tournament"
@@ -20,6 +21,7 @@ class Tournament:
             os.makedirs(FOLDER_BACKUP_TOURNAMENT_PATH)
 
     def initialize_db(self, name_tournament):
+        # pylint: disable=attribute-defined-outside-init
         file_path = f"data/data_tournament/{name_tournament}.json"
         self.db_tournament = TinyDB(file_path, indent=4, encoding="utf-8")
         self.tournament = self.db_tournament.table(name_tournament)
@@ -28,7 +30,7 @@ class Tournament:
         self, name_tournament, localisation, round, start_date, end_date
     ):
         self.initialize_db(name_tournament)
-        self.data = {
+        data = {
             "name_tournament": name_tournament,
             "localisation": localisation,
             "rounds_number": round,
@@ -39,7 +41,7 @@ class Tournament:
             "description": "",
             "player_list": [],
         }
-        self.tournament.insert(self.data)
+        self.tournament.insert(data)
 
     def remove_tournament(self, name_tournament):
         file_path = f"data/data_tournament/{name_tournament}.json"
@@ -72,10 +74,14 @@ class Tournament:
                     )
                     return (
                         True,
-                        f"Joueur {player_data['name']} " f"ajouté à {name_tournament}",
+                        f"Joueur {player_data['name']} "
+                        f"ajouté à {name_tournament}",
                     )
                 else:
-                    return (False, f"{player_data['name']} déjà dans {name_tournament}")
+                    return (
+                        False,
+                        f"{player_data['name']} déjà dans {name_tournament}"
+                        )
             else:
                 return False, "tournoi inexistant"
         else:
@@ -102,8 +108,7 @@ class Tournament:
             return False
 
     def find_tournament(self, name_tournament):
-        file_path = f"data/data_tournament/{name_tournament}.json"
-        self.db_tournament = TinyDB(file_path, indent=4)
+        self.initialize_db(name_tournament)
         tournament_table = self.db_tournament.table(name_tournament)
         tournament_data = tournament_table.all()
         if tournament_data:
@@ -128,8 +133,7 @@ class Tournament:
             player_list = tournament_data.get("player_list", [])
             player_ids = [player["national_id"] for player in player_list]
             return player_ids
-        else:
-            return False
+        return False
 
     def get_name_tournaments(self):
         names_tournament = []
@@ -137,6 +141,24 @@ class Tournament:
             name_tournament = os.path.splitext(filename)[0]
             names_tournament.append(name_tournament)
         return names_tournament
+
+    def get_tournament_open(self):
+        names_tournament = []
+        for filename in os.listdir(FOLDER_DATA_TOURNAMENTS_PATH):
+            name_tournament = os.path.splitext(filename)[0]
+            tournament_data = self.find_tournament(name_tournament)
+            actual_round = tournament_data.get("actual_round")  # type: ignore
+            if actual_round != "tournament closed":
+                names_tournament.append(name_tournament)
+        return names_tournament
+
+    def check_player_in_tournament(self, name_tournament):
+        tournament_data = self.find_tournament(name_tournament)
+        if tournament_data:
+            player_list = tournament_data.get("player_list", [])
+            if len(player_list) == 0:
+                return True
+        return False
 
     def get_name_backup(self):
         name_backup = []
@@ -169,6 +191,13 @@ class Tournament:
         if actual_round == rounds_number:
             return True
 
+    def check_tournament_closes(self, name_tournament):
+        tournament_data = self.find_tournament(name_tournament)
+        if tournament_data:
+            tournament_closed = tournament_data.get("actual_round")
+            if tournament_closed == "tournament closed":
+                return True
+
     def end_tournament(self, name_tournament):
         self.initialize_db(name_tournament)
         tournament_data = self.find_tournament(name_tournament)
@@ -188,17 +217,29 @@ class Tournament:
 
     def save_in_backup(self, name_tournament):
         tournament_file = f"{name_tournament}.json"
-        tournament_path = os.path.join(FOLDER_DATA_TOURNAMENTS_PATH, tournament_file)
+        tournament_path = os.path.join(
+            FOLDER_DATA_TOURNAMENTS_PATH,
+            tournament_file
+            )
         current_date = datetime.now().strftime("%Y-%m-%d_%Hh%Mm")
         backup_filename = f"{name_tournament}_{current_date}.json"
-        backup_path = os.path.join(FOLDER_BACKUP_TOURNAMENT_PATH, backup_filename)
+        backup_path = os.path.join(
+            FOLDER_BACKUP_TOURNAMENT_PATH,
+            backup_filename
+            )
         success = shutil.copy(tournament_path, backup_path)
         return success
 
     def restore_backup(self, backup_name):
-        backup_path = os.path.join(FOLDER_BACKUP_TOURNAMENT_PATH, f"{backup_name}.json")
+        backup_path = os.path.join(
+            FOLDER_BACKUP_TOURNAMENT_PATH,
+            f"{backup_name}.json"
+            )
         name_tournament = backup_name.split("_")[0]
-        path = os.path.join(FOLDER_DATA_TOURNAMENTS_PATH, f"{name_tournament}.json")
+        path = os.path.join(
+            FOLDER_DATA_TOURNAMENTS_PATH,
+            f"{name_tournament}.json"
+            )
         shutil.copy(backup_path, path)
         return name_tournament
 
@@ -207,8 +248,13 @@ class Tournament:
         tournament_data = self.find_tournament(name_tournament)
         if tournament_data:
             self.tournament.update(
-                {"description": data}, Query().name_tournament == name_tournament
+                {"description": data},
+                Query().name_tournament == name_tournament
             )
             return True
         else:
             return False
+
+
+if __name__ == "__main__":
+    pass

@@ -1,4 +1,3 @@
-
 class DisplayMessage:
 
     def __init__(self):
@@ -28,21 +27,22 @@ class DisplayMessage:
         else:
             print("Opération impossible")
             return False
-        
+
     def display_player_exist(self, bool):
         if bool is False:
             print("Joueur inéxistant, Veuillez choisir dans la liste")
-            
+
     def display_win_result(self, winner_name, loser_name):
         print(f"{winner_name} a gagné contre {loser_name}")
 
     def display_draw_result(self, player1_name, player2_name):
         print(f"Match nul entre {player1_name} et {player2_name}")
-    
+
     def display_end_tournament(self, winner):
         print(f"TOURNOI TERMINER \n Gagnant : {winner}")
-
 
     def display_birthday(self, name):
         print(f"On souhaite un joyeux anniversaire à {name} !! :D ")
 
+    def display_closed_tournament(self):
+        print("Tournoi déjà terminé")

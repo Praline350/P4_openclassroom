@@ -29,6 +29,8 @@ class ControllerManager:
                     self.menu_tournament_choice()
                 case "Jouer un tournoi":
                     self.controller_game.begin_tournament()
+                case "Jouer un tournoi d'une sauvegarde":
+                    self.controller_game.play_from_backup()
                 case "Rapports":
                     self.menu_report_choice()
                 case "Sortir":
@@ -92,3 +94,7 @@ class ControllerManager:
                     sys.exit()
                 case _:
                     print("Choix invalide")
+
+
+if __name__ == "__main__":
+    pass

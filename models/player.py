@@ -36,7 +36,7 @@ class Player:
             return True
         else:
             return False
-        
+
     def find_player(self, national_id):
         # Recherche d'un joueur par son ID national
         player_data = self.players.search(Query().national_id == national_id)
@@ -71,8 +71,16 @@ class Player:
         player_data = self.players.all()
         today = datetime.today()
         for player in player_data:
-            birth_date = datetime.strptime(player.get("birth_date", ""), "%d-%m-%Y")
+            birth_date = datetime.strptime(
+                player.get("birth_date", ""), "%d-%m-%Y"
+                )
             if birth_date.month == today.month and birth_date.day == today.day:
-                player_name = f"{player.get('name', '')} {player.get('surname', '')}"
+                player_name = (
+                    f"{player.get('name', '')} {player.get('surname', '')}"
+                    )
                 return player_name
         return None
+
+
+if __name__ == "__main__":
+    pass

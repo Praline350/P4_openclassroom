@@ -7,7 +7,8 @@ class PromptForm:
 
     def __init__(self):
         self.validator = Validator()
-        
+        self.retour = Choice(title="retour")
+
     def prompt_national_id(self):
         national_id = self.validator.validate_national_id("Entrez l'IDN : ")
         return national_id
@@ -20,7 +21,7 @@ class PromptForm:
         birth_date = self.validator.validate_date(
             "Entrez la date de naissance (JJ-MM-AAAA): "
         )
-    
+
         return surname, name, birth_date
 
     def prompt_for_add_tournament(self):
@@ -61,21 +62,30 @@ class PromptForm:
             "Quel tournoi supprimé ?", choices=tournament_list
         ).ask()
         return name_tournament
-    
+
     def prompt_for_add_description(self):
         description = questionary.text("Ajouter une description ?").ask()
         return description
-    
+
     def prompt_for_begin_tournament(self):
-        user_input = questionary.select("Débuter/Continuer ou reprendre une sauvegarde ?",
-                                        choices=['Commencer/Continuer', "Backup"]).ask()
+        user_input = questionary.select(
+            "Débuter le tournoi ou reprendre une sauvegarde ?",
+            choices=["Commencer le tournoi", "Backup", "Retour"],
+        ).ask()
         return user_input
-    
+
     def prompt_for_backup(self, backup_list):
-        backup_name = questionary.select("Quel backup ?", 
-                                         choices=backup_list).ask()
+        choices = [Choice(title=backup) for backup in backup_list]
+        choices.append(Choice(title="Retour"))
+        backup_name = questionary.select("Quel backup ?",
+                                         choices=choices).ask()
         return backup_name
-    
+
+    def prompt_for_play(self):
+        user_input = questionary.select(
+            "Commencer le tournoi ?", choices=["YES", "No"]
+        ).ask()
+        return user_input
 
     def prompt_continue_tournament(self):
         print("---Tournoi en cours---")
@@ -83,34 +93,43 @@ class PromptForm:
             "Passer au prochain Round ?", choices=["YES", "NO"]
         ).ask()
         return user_input
-    
+
     def prompt_play_round(self, round_index):
         print(f"----DEBUT ROUND {round_index}-----")
-        user_input = questionary.select("Jouer le round ?", choices=['YES', 'NO']).ask()
-        return user_input 
-    
+        user_input = questionary.select("Jouer le round ?",
+                                        choices=["YES", "NO"]
+                                        ).ask()
+        return user_input
+
     def prompt_for_get_winner(self, player_list):
         results = []
         for game in player_list:
             player1, player2 = game
-            choices = [Choice(title=player1), Choice(title=player2), Choice(title="Match nul")]
-            user_input = questionary.select('Qui a remporté le match? ', choices=choices).ask()
+            choices = [
+                Choice(title=player1),
+                Choice(title=player2),
+                Choice(title="Match nul"),
+            ]
+            print(f"{player1} VS {player2} ! ")
+            user_input = questionary.select(
+                "Qui a remporté le match? ", choices=choices
+            ).ask()
             results.append(user_input)
-        print(results)
         return results
-    
+
     def promp_for_play_auto(self):
-        user_input = questionary.select("-----Jouer les match automatiquement ?-----",
-                                        choices=["YES", "NO"]).ask()
-        return user_input
-    
-    def prompt_for_save(self):
-        user_input = questionary.select('---Voulez effectuer une backup ?',
-                                        choices=["YES", "NO"]).ask()
+        user_input = questionary.select(
+            "-----Jouer les match automatiquement ?-----",
+            choices=["YES", "NO"]
+        ).ask()
         return user_input
 
-        
-    
+    def prompt_for_save(self):
+        user_input = questionary.select(
+            "---Voulez effectuer une backup ?", choices=["YES", "NO"]
+        ).ask()
+        return user_input
+
     def prompt_for_remove_player_in_tournament(self, tournament_list):
         print("-----Supprimer un joueur du tournoi-----")
 
@@ -122,7 +141,7 @@ class PromptForm:
     def prompt_continue_add(self):
         user_input = questionary.select(
             "Un autre ?", choices=["YES", "NO"]
-        ).ask()
+            ).ask()
         return user_input
 
     def prompt_export(self):
@@ -132,12 +151,31 @@ class PromptForm:
         return user_input
 
     def prompt_data_tournament(self, tournament_list):
-        name_tournament = questionary.select(
-            "quel tournoi ?", choices=tournament_list
-        ).ask()
+        choices = [Choice(title=tournament) for tournament in tournament_list]
+        choices.append(Choice(title="Retour"))
+        name_tournament = questionary.select("quel tournoi ?",
+                                             choices=choices
+                                             ).ask()
         return name_tournament
-    
-    def prompt_secure(self):
-        user_input = questionary.select("Vous êtes sûre ? ", choices=["YES", "NO"]).ask()
+
+    def prompt_check_player(self):
+        user_input = questionary.select(
+            "Aucun joueur dans le tournoi. Voulez vous ajouter des joueurs ?",
+            choices=["YES", "NO"],
+        ).ask()
         return user_input
 
+    def prompt_tournament_open(self, tournament_list):
+        choices = [Choice(title=tournament) for tournament in tournament_list]
+        choices.append(Choice(title="Créer un tournoi"))
+        choices.append(Choice(title="Retour"))
+        name_tournament = questionary.select(
+            "Quel tournoi voulez vous commencer ?", choices=choices
+        ).ask()
+        return name_tournament
+
+    def prompt_secure(self):
+        user_input = questionary.select(
+            "Vous êtes sûre ? ", choices=["YES", "NO"]
+        ).ask()
+        return user_input

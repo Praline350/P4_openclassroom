@@ -110,6 +110,8 @@ class ControllerMenu:
             players_ids = self.player.get_all_player_id()
             tournament_list = self.tournament.get_name_tournaments()
             name_tournament = self.form.prompt_data_tournament(tournament_list)
+            if name_tournament == "Retour":
+                break
             national_id = self.form.prompt_national_id()
             bool = self.player.player_exists(national_id)
             if not bool:
@@ -137,7 +139,9 @@ class ControllerMenu:
     def menu_remove_tournament(self):
         while True:
             tournament_list = self.tournament.get_name_tournaments()
-            name_tournament = self.form.prompt_for_remove_tournament(tournament_list)
+            name_tournament = self.form.prompt_data_tournament(tournament_list)
+            if name_tournament == "Retour":
+                break
             user_input = self.form.prompt_secure()
             if user_input == "YES":
                 self.tournament.remove_tournament(name_tournament)
@@ -147,10 +151,14 @@ class ControllerMenu:
     def menu_remove_player_in_tournament(self):
         while True:
             tournament_list = self.tournament.get_name_tournaments()
-            name_tournament = self.form.prompt_for_remove_player_in_tournament(
+            name_tournament = self.form.prompt_data_tournament(
                 tournament_list
             )
-            players_ids = self.tournament.get_ids_in_tournament(name_tournament)
+            if name_tournament == "Retour":
+                break
+            players_ids = self.tournament.get_ids_in_tournament(
+                name_tournament
+                )
             national_id = self.form.prompt_national_id()
             bool = self.tournament.find_player_in_tournament(
                 name_tournament, national_id
@@ -195,11 +203,21 @@ class ControllerMenu:
             self.display.display_success(bool)
 
     def menu_add_description(self):
-        tournament_list = self.tournament.get_name_tournaments()
-        name_tournament = self.form.prompt_data_tournament(tournament_list)
-        description = self.form.prompt_for_add_description()
-        bool = self.tournament.add_description(name_tournament, description)
-        if bool:
-            self.display.display_success(bool)
-        else:
-            self.display.display_success(bool)
+        while True:
+            tournament_list = self.tournament.get_name_tournaments()
+            name_tournament = self.form.prompt_data_tournament(tournament_list)
+            if name_tournament == "Retour":
+                break
+            description = self.form.prompt_for_add_description()
+            bool = self.tournament.add_description(
+                name_tournament,
+                description
+                )
+            if bool:
+                self.display.display_success(bool)
+            else:
+                self.display.display_success(bool)
+
+
+if __name__ == "__main__":
+    pass
