@@ -1,6 +1,7 @@
 # Gestion du club d'échecs
 
-Ce programme a pour but d'aider à la gestion générale d'un club d'échecs.  Il permet la gestion des joueurs, des tournois et des matchs.
+Ce programme a pour but d'aider à la gestion générale d'un club d'échecs.  
+Il permet la gestion des joueurs, des tournois et des matchs.  
 
 ## Installation
 
