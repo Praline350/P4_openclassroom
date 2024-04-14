@@ -8,6 +8,8 @@ class Menu:
         self.validator = Validator()
 
     def menu_index(self):
+        """Choix utilisateur du menu principal"""
+
         user_input = 0
         user_input = questionary.select(
             "------MENU------",
@@ -24,6 +26,8 @@ class Menu:
         return user_input
 
     def menu_player(self):
+        """Choix utilisateur du menu Joueur"""
+
         user_input = 0
         user_input = questionary.select(
             "------MENU JOUEUR-----",
@@ -38,6 +42,8 @@ class Menu:
         return user_input
 
     def menu_tournament(self):
+        """Choix utilisateur du menu tournoi"""
+
         user_input = 0
         user_input = questionary.select(
             "------MENU TOURNOIS-----",
@@ -55,6 +61,8 @@ class Menu:
         return user_input
 
     def menu_begin_tournament(self, tournament_list):
+        """Permet de selectionné un tournoi dans la liste des tournoi"""
+
         name_tournament = questionary.select(
             "-----Quel tournoi ? -----", choices=tournament_list
         ).ask()
@@ -62,6 +70,8 @@ class Menu:
         return name_tournament
 
     def menu_report(self):
+        """Choix utilisateur du menu rapports"""
+
         user_input = questionary.select(
             "----Quel rapport voulez vous ? ----",
             choices=[

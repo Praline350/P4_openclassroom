@@ -14,6 +14,8 @@ EXPORT_TOURNAMENT_PATH = "export_data/export_tournament.txt"
 
 class Report:
     def __init__(self):
+        """Créer le dossier des rapports"""
+
         if not os.path.exists(FOLDER_EXPORT_DATA):
             os.makedirs(FOLDER_EXPORT_DATA)
         self.round = Round()
@@ -21,6 +23,8 @@ class Report:
         self.player = Player()
 
     def format_report(self, data):
+        """Formate les données des rapports"""
+
         if isinstance(data, list):
             for index, item in enumerate(data):
                 data[index] = (
@@ -36,12 +40,16 @@ class Report:
             return formatted_data
 
     def player_report(self):
+        """Retourne les donées des joueurs"""
+
         player_data = self.player.players.all()
         sorted_players = sorted(player_data, key=lambda x: x["name"])
         data = self.format_report(sorted_players)
         return data
 
     def tournament_report(self, name_tournament):
+        """Retourne les données d'un tournoi"""
+
         tournament_data = self.tournament.find_tournament(name_tournament)
         if tournament_data:
             filtered_data = {
@@ -58,6 +66,8 @@ class Report:
             return False
 
     def player_in_tournament_report(self, name_tournament):
+        """Retourne les joueurs d'un tournoi"""
+
         tournament_data = self.tournament.find_tournament(name_tournament)
         player_list = tournament_data.get("player_list", [])  # type: ignore
         sorted_players = sorted(player_list, key=lambda x: x["name"])
@@ -65,6 +75,8 @@ class Report:
         return data
 
     def export_players_to_file(self, data):
+        """Exporte le rapport des joueurs dans un .txt"""
+
         try:
             with open(EXPORT_PLAYERS_PATH, "w", encoding="utf-8") as file:
                 for item in data:
@@ -75,6 +87,8 @@ class Report:
             return True
 
     def export_tournament_to_file(self, data):
+        """Exporte les données du tournoi dans un .txt"""
+
         try:
             with open(EXPORT_TOURNAMENT_PATH, "a", encoding="utf-8") as file:
                 file.write(str(data) + "\n")
@@ -84,6 +98,8 @@ class Report:
             return True
 
     def export_player_in_tournament(self, name_tournament, data):
+        """Exporte les joueurs d'un tournoi dans un .txt"""
+
         try:
             with open(
                 f"{EXPORT_PLAYERS_IN_TOURNAMENT_PATH}_{name_tournament}.txt",
@@ -97,6 +113,8 @@ class Report:
             return True
 
     def round_report(self, name_tournament):
+        """Retourne les données des round d'un tournoi"""
+
         tournament_data = self.tournament.find_tournament(name_tournament)
         if tournament_data:
             round_table = self.tournament.db_tournament.table("rounds")
@@ -107,6 +125,8 @@ class Report:
             return False
 
     def format_round(self, data):
+        """Formate les données des rounds"""
+
         formatted_data = ""
         for round_info in data:
             formatted_data += f"Round Index: {round_info['round_index']}\n"
@@ -125,6 +145,8 @@ class Report:
         return formatted_data
 
     def export_round_to_file(self, name_tournament, data):
+        """Exporte les données des rounds dans un .txt"""
+
         try:
             with open(
                 f"{EXPORT_ROUNDS_PATH}_{name_tournament}.txt",

@@ -17,6 +17,8 @@ class ControllerManager:
         self.diplay = DisplayMessage()
 
     def menu_choice(self):
+        """Menu principal"""
+
         name = self.player.check_birday()
         if name:
             self.diplay.display_birthday(name)
@@ -39,6 +41,8 @@ class ControllerManager:
                     print("Choix invalide")
 
     def menu_report_choice(self):
+        """Menu des rapports"""
+
         while True:
             user_input = self.menu.menu_report()
             match user_input:
@@ -58,6 +62,8 @@ class ControllerManager:
                     print("Choix invalide")
 
     def menu_player_choice(self):
+        """Menu joueur"""
+
         while True:
             user_input = self.menu.menu_player()
             match user_input:
@@ -73,6 +79,8 @@ class ControllerManager:
                     print("Choix invalide")
 
     def menu_tournament_choice(self):
+        """Menu tournoi"""
+
         while True:
             user_input = self.menu.menu_tournament()
             match user_input:

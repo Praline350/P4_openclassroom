@@ -14,6 +14,8 @@ class ControllerMenu:
         self.form = PromptForm()
 
     def menu_report_player(self):
+        """Créer le rapport des tous les joueurs"""
+
         while True:
             data = self.report.player_report()
             bool = self.display.display_data_list(data)
@@ -27,6 +29,8 @@ class ControllerMenu:
                 break
 
     def menu_report_tournament(self):
+        """Créer le rapport d'un tournoi"""
+
         while True:
             tournament_list = self.tournament.get_name_tournaments()
             name_tournament = self.form.prompt_data_tournament(tournament_list)
@@ -42,6 +46,8 @@ class ControllerMenu:
                 break
 
     def menu_report_player_in_tournament(self):
+        """Créer le rapport des joueurs dans un tournoi"""
+
         while True:
             tournament_list = self.tournament.get_name_tournaments()
             name_tournament = self.form.prompt_data_tournament(tournament_list)
@@ -56,6 +62,8 @@ class ControllerMenu:
                 break
 
     def menu_report_round(self):
+        """Créer le rapport des rounds d'un tournoi"""
+
         while True:
             tournament_list = self.tournament.get_name_tournaments()
             name_tournament = self.form.prompt_data_tournament(tournament_list)
@@ -70,6 +78,8 @@ class ControllerMenu:
                 break
 
     def menu_add_player(self):
+        """Menu pour ajouter un joueur au club"""
+
         while True:
             surname, name, birth_date = self.form.prompt_for_add_player()
             national_id = self.form.prompt_national_id()
@@ -83,6 +93,8 @@ class ControllerMenu:
             pass
 
     def menu_remove_player(self):
+        """Menu pour supprimer un joueur du club"""
+
         while True:
             national_id = self.player.get_all_player_id()
             id_player = self.form.prompt_for_id_list(national_id)
@@ -96,6 +108,8 @@ class ControllerMenu:
                 break
 
     def menu_add_tournament(self):
+        """Menu pour ajouter un tournoi"""
+
         while True:
             (name_tournament, localisation, round, start_date, end_date) = (
                 self.form.prompt_for_add_tournament()
@@ -106,6 +120,8 @@ class ControllerMenu:
             break
 
     def menu_add_player_in_tournament(self):
+        """Menu pour ajouter des joueurs au tournoi"""
+
         while True:
             players_ids = self.player.get_all_player_id()
             tournament_list = self.tournament.get_name_tournaments()
@@ -137,6 +153,8 @@ class ControllerMenu:
                 break
 
     def menu_remove_tournament(self):
+        """Menu pour supprimer un tournoi"""
+
         while True:
             tournament_list = self.tournament.get_name_tournaments()
             name_tournament = self.form.prompt_data_tournament(tournament_list)
@@ -149,6 +167,8 @@ class ControllerMenu:
                 break
 
     def menu_remove_player_in_tournament(self):
+        """Menu pour supprimer un joueur du tournoi"""
+
         while True:
             tournament_list = self.tournament.get_name_tournaments()
             name_tournament = self.form.prompt_data_tournament(
@@ -194,6 +214,8 @@ class ControllerMenu:
                 break
 
     def menu_save_tournament(self):
+        """Menu pour sauvegarder un tournoi dans son état actuel"""
+
         tournament_list = self.tournament.get_name_tournaments()
         name_tournament = self.form.prompt_data_tournament(tournament_list)
         bool = self.tournament.save_in_backup(name_tournament)
@@ -203,6 +225,8 @@ class ControllerMenu:
             self.display.display_success(bool)
 
     def menu_add_description(self):
+        """Menu pour ajouter une description au tournoi"""
+
         while True:
             tournament_list = self.tournament.get_name_tournaments()
             name_tournament = self.form.prompt_data_tournament(tournament_list)

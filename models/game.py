@@ -14,6 +14,8 @@ class Game:
         self.player = Player()
 
     def make_game(self, name_tournament, round_index):
+        """Créer les premier match en mélangeant aléatoirement les joueurs"""
+
         self.tournament.initialize_db(name_tournament)
         tournament_data = self.tournament.find_tournament(name_tournament)
         round_table = self.tournament.db_tournament.table("rounds")
@@ -45,6 +47,8 @@ class Game:
             )
 
     def play_game(self, name_tournament, round_index):
+        """(DEV) Algo qui choisis le vainqueur"""
+
         round_table = self.tournament.db_tournament.table("rounds")
         round_data = self.round.find_round(name_tournament, round_index)
         result_list = []
@@ -84,6 +88,8 @@ class Game:
         return result_list
 
     def get_game_player(self, name_tournament, round_index):
+        """Permet de choisir le vainqueur à l'issu des matchs"""
+
         round_data = self.round.find_round(name_tournament, round_index)
         players_list = []
         game_list = round_data.get("game_list", [])  # type: ignore
@@ -96,6 +102,8 @@ class Game:
         return players_list
 
     def update_scores(self, name_tournament, round_index, results):
+        """Met à jour les scores généraux du tournoi"""
+
         self.tournament.initialize_db(name_tournament)
         round_table = self.tournament.db_tournament.table("rounds")
         round_data = self.round.find_round(name_tournament, round_index)
@@ -114,18 +122,20 @@ class Game:
                     else:
                         for player in game["players"]:
                             player["score"] += 0.5
-
-                # Mettre à jour la base de données avec les scores mis à jour
                 round_table.update({"game_list": game_list},
                                    Query().round_index == round_index)
 
     def get_num_game(self, name_tournament, round_index):
+        """Retourne le nombre de match dans le round"""
+
         round_data = self.round.find_round(name_tournament, round_index)
         if round_data:
             game_list = round_data.get('game_list', [])  # type: ignore
             return len(game_list)
 
     def end_game(self, name_tournament, round_index):
+        """Met a jour les score, et la date de fin de round"""
+
         self.tournament.initialize_db(name_tournament)
         tournament_data = self.tournament.find_tournament(name_tournament)
         round_data = self.round.find_round(name_tournament, round_index)
@@ -148,6 +158,8 @@ class Game:
         )
 
     def sorted_score(self, name_tournament):
+        """Trie les score pour distribuer les prochain matchs"""
+
         self.tournament.initialize_db(name_tournament)
         tournament_data = self.tournament.find_tournament(name_tournament)
         if tournament_data:

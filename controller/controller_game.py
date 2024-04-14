@@ -20,8 +20,9 @@ class ControllerGame:
         self.tournament_finished = False
 
     def begin_tournament(self):
-        while not self.tournament_finished:
+        """Logique de début de tournoi"""
 
+        while not self.tournament_finished:
             tournament_list = self.tournament.get_tournament_open()
             name_tournament = self.form.prompt_tournament_open(tournament_list)
             if name_tournament == "Retour":
@@ -72,6 +73,8 @@ class ControllerGame:
                     break
 
     def play_from_backup(self):
+        """Permet de jouer un tournoi d'une backup"""
+
         while not self.tournament_finished:
             tournament_list = self.tournament.get_name_tournaments()
             backup_list = self.tournament.get_name_backup()
@@ -91,6 +94,7 @@ class ControllerGame:
                 break
 
     def play_round(self, name_tournament):
+        """Logique pour jouer les rounds automatiquement"""
         while True:
             round_index = self.tournament.get_round_index(name_tournament) + 1
             user_input = self.form.prompt_play_round(round_index)
@@ -115,6 +119,8 @@ class ControllerGame:
                 break
 
     def play_round_manual(self, name_tournament):
+        """Logique de rounds, distribution des match en fonction des points"""
+
         while True:
             round_index = self.tournament.get_round_index(name_tournament) + 1
             user_input = self.form.prompt_play_round(round_index)
@@ -137,6 +143,8 @@ class ControllerGame:
                 break
 
     def end_of_tournament(self, name_tournament):
+        """Fin de tournoi, défini le vaiqueur"""
+
         winner = self.tournament.end_tournament(name_tournament)
         self.display.display_end_tournament(winner)
         self.tournament_finished = True

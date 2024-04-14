@@ -5,6 +5,8 @@ from datetime import datetime
 class Validator:
 
     def validate_input_str(self, prompt):
+        """Validateur entrée avec seulement des lettres"""
+
         while True:
             user_input = questionary.text(prompt).ask()
             if not user_input.replace(
@@ -17,6 +19,8 @@ class Validator:
                 return user_input
 
     def validate_date(self, prompt):
+        """Validateur pour entrées date correct"""
+
         while True:
             user_input = questionary.text(prompt).ask()
             try:
@@ -26,6 +30,8 @@ class Validator:
                 print("Format invalide => (JJ-MM-AAAA)")
 
     def validate_national_id(self, prompt):
+        """Validateur pour le format de L'ID"""
+
         while True:
             user_input = questionary.text(prompt).ask()
             if (
@@ -42,6 +48,8 @@ class Validator:
                 )
 
     def validate_int(self, prompt):
+        """Validateur pour entrée seulement des chiffres"""
+
         while True:
             user_input = questionary.text(prompt).ask()
             if not user_input.isdigit():
