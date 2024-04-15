@@ -1,3 +1,6 @@
+import time
+
+
 class DisplayMessage:
 
     def __init__(self):
@@ -39,10 +42,22 @@ class DisplayMessage:
         print(f"Match nul entre {player1_name} et {player2_name}")
 
     def display_end_tournament(self, winner):
-        print(f"TOURNOI TERMINER \n Gagnant : {winner}")
+        print("TOURNOI TERMINER")
+        time.sleep(0.4)
+        print(f"Gagnant : {winner}")
+        time.sleep(1)
 
     def display_birthday(self, name):
         print(f"On souhaite un joyeux anniversaire à {name} !! :D ")
 
     def display_closed_tournament(self):
         print("Tournoi déjà terminé")
+
+    def display_no_player(self):
+        print(
+            "Aucun joueur dans le tournoi, "
+            "veuillez ajouter des joueurs dans le menu tournoi"
+              )
+
+    def display_impair(self):
+        print("Nombre de joueurs impair, veuillez ajouter un joueur")

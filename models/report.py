@@ -10,6 +10,7 @@ EXPORT_PLAYERS_PATH = "export_data/export_players.txt"
 EXPORT_PLAYERS_IN_TOURNAMENT_PATH = "export_data/export_player_in_tournament"
 EXPORT_ROUNDS_PATH = "export_data/export_rounds"
 EXPORT_TOURNAMENT_PATH = "export_data/export_tournament.txt"
+EXPORT_ALL_PATH = "export_data/export_all.txt"
 
 
 class Report:
@@ -65,14 +66,35 @@ class Report:
         else:
             return False
 
+    def all_report(self, name_tournament):
+        tournament_data = self.tournament_report(name_tournament)
+        player_data = self.player_in_tournament_report(name_tournament)
+        round_data = self.round_report(name_tournament)
+        data = [tournament_data, round_data]
+        for p in player_data:  # type: ignore
+            data.append(p)
+        return data
+
     def player_in_tournament_report(self, name_tournament):
         """Retourne les joueurs d'un tournoi"""
-
+        self.tournament.initialize_db(name_tournament)
         tournament_data = self.tournament.find_tournament(name_tournament)
         player_list = tournament_data.get("player_list", [])  # type: ignore
         sorted_players = sorted(player_list, key=lambda x: x["name"])
         data = self.format_report(sorted_players)
         return data
+
+    def export_all(self, data):
+        """Exporte le rapport des joueurs dans un .txt"""
+
+        try:
+            with open(EXPORT_ALL_PATH, "w", encoding="utf-8") as file:
+                for item in data:
+                    file.write(f"{item}\n")
+        except Exception:
+            return False
+        else:
+            return True
 
     def export_players_to_file(self, data):
         """Exporte le rapport des joueurs dans un .txt"""

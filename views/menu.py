@@ -22,7 +22,6 @@ class Menu:
                 "Sortir",
             ],
         ).ask()
-        print(user_input)
         return user_input
 
     def menu_player(self):
@@ -38,7 +37,6 @@ class Menu:
                 "Sortir"
                 ]
         ).ask()
-        print(user_input)
         return user_input
 
     def menu_tournament(self):
@@ -79,6 +77,7 @@ class Menu:
                 "Informations tournoi",
                 "Liste des joueurs dans un tournoi",
                 "Liste des tours et matchs d'un tournoi",
+                "Rapport complet d'un tournoi",
                 "Retour",
                 "Sortir",
             ],

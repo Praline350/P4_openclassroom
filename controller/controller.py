@@ -54,6 +54,8 @@ class ControllerManager:
                     self.controller.menu_report_player_in_tournament()
                 case "Liste des tours et matchs d'un tournoi":
                     self.controller.menu_report_round()
+                case "Rapport complet d'un tournoi":
+                    self.controller.menu_report_all()
                 case "Retour":
                     break
                 case "Sortir":

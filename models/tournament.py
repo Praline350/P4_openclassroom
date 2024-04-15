@@ -47,6 +47,11 @@ class Tournament:
         }
         self.tournament.insert(data)
 
+    def tournament_exist(self, name_tournament):
+        return self.tournament.contains(
+            Query().name_tournament == name_tournament
+            )
+
     def remove_tournament(self, name_tournament):
         """Supprime un tournoi"""
 
@@ -167,19 +172,25 @@ class Tournament:
         for filename in os.listdir(FOLDER_DATA_TOURNAMENTS_PATH):
             name_tournament = os.path.splitext(filename)[0]
             tournament_data = self.find_tournament(name_tournament)
-            actual_round = tournament_data.get("actual_round")  # type: ignore
-            if actual_round != "tournament closed":
-                names_tournament.append(name_tournament)
+            if tournament_data:
+                actual_round = tournament_data.get("actual_round")
+                if actual_round != "tournament closed":
+                    names_tournament.append(name_tournament)
+                else:
+                    return False
         return names_tournament
 
     def check_player_in_tournament(self, name_tournament):
-        """Retourne True si il n'y pas de joueurs dans le tournoi"""
+        """Retourne True si il n'y pas de joueurs dans le tournoi
+            ou si le nombre est"""
 
         tournament_data = self.find_tournament(name_tournament)
         if tournament_data:
             player_list = tournament_data.get("player_list", [])
             if len(player_list) == 0:
-                return True
+                return 1
+            elif len(player_list) % 2 != 0:
+                return 2
         return False
 
     def get_name_backup(self):
@@ -190,6 +201,21 @@ class Tournament:
             name_tournament = os.path.splitext(filename)[0]
             name_backup.append(name_tournament)
         return name_backup
+
+    def get_backup_from_name(self, name_tournament):
+        """Retourne les sauvegardes d'un tournoi spécifique"""
+
+        backups = []
+        for filename in os.listdir(FOLDER_BACKUP_TOURNAMENT_PATH):
+            if filename.startswith(name_tournament):
+                name = os.path.splitext(filename)[0]
+                backups.append(name)
+        return backups
+
+    def extract_backup_name(self, backup):
+        """Extrait le nom du tournoi à partir du nom d'une sauvegarde."""
+
+        return backup.split('_')[0]
 
     def get_round_index(self, name_tournament):
         """Retourne le numéro de round actuel d'un tournoi"""

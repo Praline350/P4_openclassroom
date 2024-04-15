@@ -47,6 +47,25 @@ class Validator:
                     "Veuillez entrer 2 lettres suivies de 5 chiffres."
                 )
 
+    def validate_id_or_list(self, prompt):
+        """validateur pour le format ID, retourne False si aucune entrées"""
+        while True:
+            user_input = questionary.text(prompt).ask()
+            if len(user_input) == 0:
+                return False
+            elif (
+                len(user_input) == 7
+                and user_input[:2].isalpha()
+                and user_input[2:].isdigit()
+            ):
+                user_input = user_input[:2].upper() + user_input[2:]
+                return user_input
+            else:
+                print(
+                    "Format d'ID national invalide."
+                    "Veuillez entrer 2 lettres suivies de 5 chiffres."
+                )
+
     def validate_int(self, prompt):
         """Validateur pour entrée seulement des chiffres"""
 

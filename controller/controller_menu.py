@@ -77,6 +77,20 @@ class ControllerMenu:
             else:
                 break
 
+    def menu_report_all(self):
+        """Créer le rapport complet d'un tournoi"""
+
+        while True:
+            tournament_list = self.tournament.get_name_tournaments()
+            name_tournament = self.form.prompt_data_tournament(tournament_list)
+            data = self.report.all_report(name_tournament)
+            user_input = self.form.prompt_export()
+            if user_input == "YES":
+                self.report.export_all(data)
+                break
+            else:
+                break
+
     def menu_add_player(self):
         """Menu pour ajouter un joueur au club"""
 
@@ -90,6 +104,8 @@ class ControllerMenu:
             if bool:
                 self.display.display_success(bool)
                 break
+            else:
+                self.display.display_success(bool)
             pass
 
     def menu_remove_player(self):
@@ -117,6 +133,11 @@ class ControllerMenu:
             self.tournament.write_tournament(
                 name_tournament, localisation, round, start_date, end_date
             )
+            bool = self.tournament.tournament_exist(name_tournament)
+            if bool:
+                self.display.display_success(bool)
+            else:
+                self.display.display_success(bool)
             break
 
     def menu_add_player_in_tournament(self):
@@ -128,29 +149,30 @@ class ControllerMenu:
             name_tournament = self.form.prompt_data_tournament(tournament_list)
             if name_tournament == "Retour":
                 break
-            national_id = self.form.prompt_national_id()
-            bool = self.player.player_exists(national_id)
-            if not bool:
-                self.display.display_player_exist(bool)
-                national_id = self.form.prompt_for_id_list(players_ids)
-                bool, message = self.tournament.add_player_in_tournament(
-                    name_tournament, national_id
-                )
-            else:
-                bool, message = self.tournament.add_player_in_tournament(
-                    name_tournament, national_id
-                )
-            if bool is True:
-                self.display.display_success(bool)
-                self.display.display_simple_message(message)
-            else:
-                self.display.display_success(bool)
-                self.display.display_simple_message(message)
-            user_input = self.form.prompt_continue_add()
-            if user_input == "YES":
-                pass
-            if user_input == "NO":
-                break
+            while True:
+                national_id = self.form.prompt_id_or_list()
+                bool = self.player.player_exists(national_id)
+                if not bool:
+                    self.display.display_player_exist(bool)
+                    national_id = self.form.prompt_for_id_list(players_ids)
+                    bool, message = self.tournament.add_player_in_tournament(
+                        name_tournament, national_id
+                    )
+                else:
+                    bool, message = self.tournament.add_player_in_tournament(
+                        name_tournament, national_id
+                    )
+                if bool is True:
+                    self.display.display_success(bool)
+                    self.display.display_simple_message(message)
+                else:
+                    self.display.display_success(bool)
+                    self.display.display_simple_message(message)
+                user_input = self.form.prompt_continue_add()
+                if user_input == "YES":
+                    pass
+                if user_input == "NO":
+                    break
 
     def menu_remove_tournament(self):
         """Menu pour supprimer un tournoi"""
@@ -179,7 +201,7 @@ class ControllerMenu:
             players_ids = self.tournament.get_ids_in_tournament(
                 name_tournament
                 )
-            national_id = self.form.prompt_national_id()
+            national_id = self.form.prompt_id_or_list()
             bool = self.tournament.find_player_in_tournament(
                 name_tournament, national_id
             )

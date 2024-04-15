@@ -4,8 +4,8 @@ from views.display_message import DisplayMessage
 from models.game import Game
 from models.tournament import Tournament
 from models.round import Round
+from models.report import Report
 from controller.controller_menu import ControllerMenu
-import time
 
 
 class ControllerGame:
@@ -14,30 +14,37 @@ class ControllerGame:
         self.tournament = Tournament()
         self.round = Round()
         self.game = Game()
+        self.report = Report()
         self.form = PromptForm()
         self.display = DisplayMessage()
         self.controller = ControllerMenu()
-        self.tournament_finished = False
 
     def begin_tournament(self):
         """Logique de début de tournoi"""
 
-        while not self.tournament_finished:
-            tournament_list = self.tournament.get_tournament_open()
-            name_tournament = self.form.prompt_tournament_open(tournament_list)
+        while True:
+            tournament_list = self.tournament.get_name_tournaments()
+            name_tournament = self.form.prompt_data_tournament(tournament_list)
             if name_tournament == "Retour":
                 break
-            if name_tournament == "Créer un tournoi":
+            check_closed = self.tournament.check_tournament_closes(
+                name_tournament
+                )
+            if check_closed is True:
+                self.display.display_closed_tournament()
+                continue
+            elif name_tournament == "Créer un tournoi":
                 self.controller.menu_add_tournament()
-                break
+                continue
             check_player = self.tournament.check_player_in_tournament(
                 name_tournament
                 )
-            if check_player is True:
-                user_input = self.form.prompt_check_player()
-                if user_input == "YES":
-                    self.controller.menu_add_player_in_tournament()
-                    break
+            if check_player == 1:
+                self.display.display_no_player()
+                break
+            elif check_player == 2:
+                self.display.display_impair()
+                break
             user_input = self.form.prompt_for_begin_tournament()
             match user_input:
                 case "Commencer le tournoi":
@@ -55,13 +62,29 @@ class ControllerGame:
                     else:
                         break
                 case "Backup":
-                    backup_list = self.tournament.get_name_backup()
+                    backup_list = self.tournament.get_backup_from_name(
+                        name_tournament
+                        )
                     backup_name = self.form.prompt_for_backup(backup_list)
+                    if backup_name == "Retour":
+                        break
                     user_input = self.form.prompt_secure()
                     if user_input == "YES":
                         name_tournament = self.tournament.restore_backup(
                             backup_name
                             )
+                        check = self.tournament.check_tournament_closes(
+                            name_tournament
+                            )
+                        if check is True:
+                            self.display.display_closed_tournament()
+                            break
+                        if check_player == 1:
+                            self.display.display_no_player()
+                            break
+                        elif check_player == 2:
+                            self.display.display_impair()
+                            break
                         user_input = self.form.prompt_for_play()
                         if user_input == "YES":
                             self.play_round_manual(name_tournament)
@@ -75,45 +98,35 @@ class ControllerGame:
     def play_from_backup(self):
         """Permet de jouer un tournoi d'une backup"""
 
-        while not self.tournament_finished:
+        while True:
             tournament_list = self.tournament.get_name_tournaments()
-            backup_list = self.tournament.get_name_backup()
             name_tournament = self.form.prompt_data_tournament(tournament_list)
+            backup_list = self.tournament.get_backup_from_name(name_tournament)
             if name_tournament == "Retour":
                 break
             backup_name = self.form.prompt_for_backup(backup_list)
             user_input = self.form.prompt_secure()
             if user_input == "YES":
                 name_tournament = self.tournament.restore_backup(backup_name)
+                check = self.tournament.check_tournament_closes(
+                    name_tournament
+                    )
+                if check is True:
+                    self.display.display_closed_tournament()
+                    continue
+                check_player = self.tournament.check_player_in_tournament(
+                    name_tournament
+                    )
+                if check_player == 1:
+                    self.display.display_no_player()
+                    break
+                elif check_player == 2:
+                    self.display.display_impair()
+                    break
                 user_input = self.form.prompt_for_play()
                 if user_input == "YES":
                     self.play_round_manual(name_tournament)
                 else:
-                    break
-            else:
-                break
-
-    def play_round(self, name_tournament):
-        """Logique pour jouer les rounds automatiquement"""
-        while True:
-            round_index = self.tournament.get_round_index(name_tournament) + 1
-            user_input = self.form.prompt_play_round(round_index)
-            if user_input == "YES":
-                round_index = self.round.add_round(name_tournament)
-                self.game.make_game(name_tournament, round_index)
-                result_list = self.game.play_game(name_tournament, round_index)
-                for result in result_list:
-                    if result[0] == "win":
-                        self.display.display_win_result(result[1], result[2])
-                        time.sleep(0.5)
-                    elif result[0] == "draw":
-                        self.display.display_draw_result(result[1], result[2])
-                        time.sleep(0.5)
-                self.game.end_game(name_tournament, round_index)
-                self.game.sorted_score(name_tournament)
-                bool = self.tournament.check_for_end(name_tournament)
-                if bool is True:
-                    self.end_of_tournament(name_tournament)
                     break
             else:
                 break
@@ -147,8 +160,10 @@ class ControllerGame:
 
         winner = self.tournament.end_tournament(name_tournament)
         self.display.display_end_tournament(winner)
-        self.tournament_finished = True
-        return self.tournament_finished
+        user_input = self.form.prompt_export()
+        if user_input == "YES":
+            data = self.report.all_report(name_tournament)
+            self.report.export_all(data)
 
 
 if __name__ == "__main__":

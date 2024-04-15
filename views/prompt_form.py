@@ -15,6 +15,12 @@ class PromptForm:
         national_id = self.validator.validate_national_id("Entrez l'IDN : ")
         return national_id
 
+    def prompt_id_or_list(self):
+        """Entrée pour ID , renvoie False si aucune entrées"""
+
+        national_id = self.validator.validate_id_or_list("Entrez l'IDN : ")
+        return national_id
+
     def prompt_for_add_player(self):
         """Entrées pour ajouter un joueur"""
 
@@ -182,7 +188,7 @@ class PromptForm:
         """Entrée pour exporter un rapport"""
 
         user_input = questionary.select(
-            "Voulez-vous exporter les fichier ?", choices=["YES", "NO"]
+            "Voulez-vous exporter le rapport ?", choices=["YES", "NO"]
         ).ask()
         return user_input
 
@@ -191,7 +197,7 @@ class PromptForm:
 
         choices = [Choice(title=tournament) for tournament in tournament_list]
         choices.append(Choice(title="Retour"))
-        name_tournament = questionary.select("quel tournoi ?",
+        name_tournament = questionary.select("Quel tournoi ?",
                                              choices=choices
                                              ).ask()
         return name_tournament
@@ -215,6 +221,11 @@ class PromptForm:
             "Quel tournoi voulez vous commencer ?", choices=choices
         ).ask()
         return name_tournament
+
+    def prompt_no_tournament(self):
+        user_input = questionary.select('Aucun tournoi, en créer un ?',
+                                        choices=["YES", "NO"]).ask()
+        return user_input
 
     def prompt_secure(self):
         """Valisation de sécurité"""
